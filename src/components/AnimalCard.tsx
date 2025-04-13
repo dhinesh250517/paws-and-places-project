@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { toast } from "sonner";
 import { MapPinIcon, DogIcon, CatIcon, HeartIcon, CalendarIcon, ClockIcon, DollarSignIcon, UserIcon, MailIcon, PhoneIcon } from 'lucide-react';
 import { Animal } from '../types';
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 interface AnimalCardProps {
   animal: Animal;
@@ -51,35 +52,49 @@ const AnimalCard: React.FC<AnimalCardProps> = ({ animal }) => {
         </CardTitle>
       </CardHeader>
       <CardContent className="pb-2 flex-grow">
-        <div className="mb-4 flex justify-center">
-          <div className="relative w-full max-w-xs aspect-square bg-gray-100 rounded-lg overflow-hidden">
-            <div className="absolute inset-0 flex items-center justify-center">
-              {type === 'dog' ? 
+        <Popover>
+          <PopoverTrigger asChild>
+            <div className="mb-4 flex justify-center cursor-pointer">
+              <div className="relative w-full max-w-xs aspect-square bg-gray-100 rounded-lg overflow-hidden">
                 <img 
-                  src="/placeholder-dog.jpg" 
-                  alt="Dog placeholder" 
+                  src={type === 'dog' ? "/placeholder-dog.jpg" : "/placeholder-cat.jpg"}
+                  alt={`${type} in need`}
                   className="object-cover w-full h-full"
                   onError={(e) => {
                     e.currentTarget.onerror = null;
                     e.currentTarget.src = "https://placehold.co/300x300?text=Feed/Adopt+Me";
-                  }} 
-                /> : 
-                <img 
-                  src="/placeholder-cat.jpg" 
-                  alt="Cat placeholder" 
-                  className="object-cover w-full h-full"
-                  onError={(e) => {
-                    e.currentTarget.onerror = null;
-                    e.currentTarget.src = "https://placehold.co/300x300?text=Feed/Adopt+Me";
-                  }}  
+                  }}
                 />
-              }
-              <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white text-center py-2">
-                Feed/Adopt Me
+                <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white text-center py-2">
+                  Click to learn how to help
+                </div>
               </div>
             </div>
-          </div>
-        </div>
+          </PopoverTrigger>
+          <PopoverContent className="w-80 p-0">
+            <div className="p-4 border-b">
+              <h3 className="text-lg font-semibold">How You Can Help</h3>
+            </div>
+            <div className="p-4 space-y-3">
+              <div>
+                <h4 className="font-medium">Feed</h4>
+                <p className="text-sm text-gray-600">You can visit the location to provide food and water for the {type}.</p>
+              </div>
+              <div>
+                <h4 className="font-medium">Adopt</h4>
+                <p className="text-sm text-gray-600">Consider adopting the {type} to give it a forever home.</p>
+              </div>
+              <div>
+                <h4 className="font-medium">Report</h4>
+                <p className="text-sm text-gray-600">Contact local animal welfare organizations if the {type} needs urgent care.</p>
+              </div>
+              <Button onClick={handleAdopt} className="w-full mt-2 bg-pawsBlue hover:bg-pawsBlue-600">
+                <HeartIcon className="h-4 w-4 mr-2" />
+                I want to help
+              </Button>
+            </div>
+          </PopoverContent>
+        </Popover>
         
         <div className="space-y-3">
           <div>
