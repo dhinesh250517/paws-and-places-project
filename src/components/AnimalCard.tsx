@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { MapPinIcon, DogIcon, CatIcon, HeartIcon, CalendarIcon, ClockIcon, DollarSignIcon, FolderHeartIcon } from 'lucide-react';
+import { MapPinIcon, DogIcon, CatIcon, HeartIcon, CalendarIcon, ClockIcon, DollarSignIcon, UserIcon, MailIcon, PhoneIcon } from 'lucide-react';
 import { Animal } from '../types';
 
 interface AnimalCardProps {
@@ -13,7 +13,7 @@ interface AnimalCardProps {
 }
 
 const AnimalCard: React.FC<AnimalCardProps> = ({ animal }) => {
-  const { type, count, healthCondition, location, qrCodeUrl, photo, createdAt } = animal;
+  const { type, count, healthCondition, location, qrCodeUrl, photo, createdAt, uploaderName, uploaderEmail, uploaderContact } = animal;
   
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString('en-US', {
@@ -90,6 +90,29 @@ const AnimalCard: React.FC<AnimalCardProps> = ({ animal }) => {
               View on map
             </Button>
           </div>
+
+          <div>
+            <div className="text-sm font-medium mb-1 flex items-center">
+              <UserIcon className="h-4 w-4 mr-1 text-pawsBlue" />
+              Contact Details:
+            </div>
+            <div className="text-sm text-gray-600">
+              <p className="flex items-center mb-1">
+                <UserIcon className="h-3.5 w-3.5 mr-1.5 text-gray-400" />
+                {uploaderName}
+              </p>
+              <p className="flex items-center mb-1">
+                <MailIcon className="h-3.5 w-3.5 mr-1.5 text-gray-400" />
+                {uploaderEmail}
+              </p>
+              {uploaderContact && (
+                <p className="flex items-center">
+                  <PhoneIcon className="h-3.5 w-3.5 mr-1.5 text-gray-400" />
+                  {uploaderContact}
+                </p>
+              )}
+            </div>
+          </div>
         </div>
       </CardContent>
       <CardFooter className="flex flex-col space-y-3 pt-0">
@@ -109,10 +132,9 @@ const AnimalCard: React.FC<AnimalCardProps> = ({ animal }) => {
             </DialogHeader>
             <div className="flex flex-col items-center justify-center p-4">
               <div className="bg-white p-4 rounded-md shadow-sm border">
-                {/* Placeholder for QR code */}
                 <div className="w-48 h-48 bg-gray-100 flex items-center justify-center">
                   <img 
-                    src={qrCodeUrl || "https://via.placeholder.com/200?text=GPay+QR+Code"} 
+                    src={qrCodeUrl}
                     alt="GPay QR Code"
                     className="max-w-full max-h-full"
                   />
@@ -121,6 +143,12 @@ const AnimalCard: React.FC<AnimalCardProps> = ({ animal }) => {
               <p className="mt-4 text-center text-sm text-gray-600">
                 Scan this QR code with your GPay app to donate to the caretaker of this animal.
               </p>
+              <div className="mt-4 text-center">
+                <div className="text-sm font-medium mb-1">Uploader Details:</div>
+                <p className="text-sm text-gray-600">{uploaderName}</p>
+                <p className="text-sm text-gray-600">{uploaderEmail}</p>
+                {uploaderContact && <p className="text-sm text-gray-600">{uploaderContact}</p>}
+              </div>
             </div>
           </DialogContent>
         </Dialog>

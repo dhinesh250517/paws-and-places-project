@@ -4,96 +4,10 @@ import Layout from '../components/Layout';
 import AnimalCard from '../components/AnimalCard';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Animal } from '../types';
+import { Animal, DbAnimal } from '../types';
 import { SearchIcon, FilterIcon } from 'lucide-react';
-
-// Mock data for our animals
-const mockAnimals: Animal[] = [
-  {
-    id: '1',
-    type: 'dog',
-    count: 3,
-    healthCondition: 'Good overall condition but hungry. One dog has a slight limp.',
-    location: {
-      address: 'Near City Park, Main Street',
-      mapUrl: 'https://maps.google.com/?q=City+Park',
-    },
-    qrCodeUrl: 'https://via.placeholder.com/200?text=GPay+QR+Code',
-    uploadedBy: 'user1',
-    createdAt: new Date('2024-03-12'),
-    photo: 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?q=80&w=2669&auto=format&fit=crop',
-  },
-  {
-    id: '2',
-    type: 'cat',
-    count: 1,
-    healthCondition: 'Thin but active. Appears to be a young adult cat.',
-    location: {
-      address: 'Behind the grocery store on Oak Avenue',
-      mapUrl: 'https://maps.google.com/?q=Oak+Avenue+Grocery',
-    },
-    qrCodeUrl: 'https://via.placeholder.com/200?text=GPay+QR+Code',
-    uploadedBy: 'user2',
-    createdAt: new Date('2024-03-15'),
-    photo: 'https://images.unsplash.com/photo-1526336024174-e58f5cdd8e13?q=80&w=2574&auto=format&fit=crop',
-  },
-  {
-    id: '3',
-    type: 'dog',
-    count: 1,
-    healthCondition: 'Seems well-fed but has some matted fur. Very friendly.',
-    location: {
-      address: 'Corner of Pine Street and River Road',
-      mapUrl: 'https://maps.google.com/?q=Pine+Street+and+River+Road',
-    },
-    qrCodeUrl: 'https://via.placeholder.com/200?text=GPay+QR+Code',
-    uploadedBy: 'user3',
-    createdAt: new Date('2024-03-17'),
-    photo: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=2574&auto=format&fit=crop',
-  },
-  {
-    id: '4',
-    type: 'cat',
-    count: 2,
-    healthCondition: 'Mother cat with kitten. Both appear healthy but cautious.',
-    location: {
-      address: 'Alleyway behind Cedar Restaurant',
-      mapUrl: 'https://maps.google.com/?q=Cedar+Restaurant',
-    },
-    qrCodeUrl: 'https://via.placeholder.com/200?text=GPay+QR+Code',
-    uploadedBy: 'user2',
-    createdAt: new Date('2024-03-18'),
-    photo: 'https://images.unsplash.com/photo-1543852786-1cf6624b9987?q=80&w=2574&auto=format&fit=crop',
-  },
-  {
-    id: '5',
-    type: 'dog',
-    count: 2,
-    healthCondition: 'Two puppies, approximately 3-4 months old. Playful but thin.',
-    location: {
-      address: 'Empty lot next to the community center',
-      mapUrl: 'https://maps.google.com/?q=Community+Center',
-    },
-    qrCodeUrl: 'https://via.placeholder.com/200?text=GPay+QR+Code',
-    uploadedBy: 'user4',
-    createdAt: new Date('2024-03-19'),
-    photo: 'https://images.unsplash.com/photo-1602250698774-469b27ce86c6?q=80&w=2574&auto=format&fit=crop',
-  },
-  {
-    id: '6',
-    type: 'cat',
-    count: 1,
-    healthCondition: 'Adult cat with minor injury on paw. Otherwise alert and healthy.',
-    location: {
-      address: 'Behind the library on Maple Street',
-      mapUrl: 'https://maps.google.com/?q=Library+Maple+Street',
-    },
-    qrCodeUrl: 'https://via.placeholder.com/200?text=GPay+QR+Code',
-    uploadedBy: 'user1',
-    createdAt: new Date('2024-03-20'),
-    photo: 'https://images.unsplash.com/photo-1598188306155-25e400eb5078?q=80&w=2574&auto=format&fit=crop',
-  },
-];
+import { supabase } from '../integrations/supabase/client';
+import { toast } from 'sonner';
 
 const HomePage = () => {
   const [animals, setAnimals] = useState<Animal[]>([]);
@@ -102,14 +16,48 @@ const HomePage = () => {
   const [animalType, setAnimalType] = useState('all');
   const [isLoading, setIsLoading] = useState(true);
   
-  // Simulate data fetching
+  // Fetch animals from Supabase
   useEffect(() => {
     const fetchAnimals = async () => {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setAnimals(mockAnimals);
-      setFilteredAnimals(mockAnimals);
-      setIsLoading(false);
+      try {
+        setIsLoading(true);
+        const { data: dbAnimals, error } = await supabase
+          .from('animals')
+          .select('*')
+          .order('created_at', { ascending: false });
+        
+        if (error) {
+          console.error('Error fetching animals:', error);
+          toast.error('Failed to load animals');
+          return;
+        }
+        
+        // Map DB animals to our frontend Animal type
+        const mappedAnimals = (dbAnimals as DbAnimal[]).map(animal => ({
+          id: animal.id,
+          type: animal.type as 'dog' | 'cat',
+          count: animal.count,
+          healthCondition: animal.health_condition,
+          location: {
+            address: animal.address,
+            mapUrl: animal.map_url,
+          },
+          qrCodeUrl: animal.qr_code_url,
+          photo: animal.photo_url || undefined,
+          uploaderName: animal.uploader_name,
+          uploaderEmail: animal.uploader_email,
+          uploaderContact: animal.uploader_contact || undefined,
+          createdAt: new Date(animal.created_at),
+        }));
+        
+        setAnimals(mappedAnimals);
+        setFilteredAnimals(mappedAnimals);
+      } catch (error) {
+        console.error('Unexpected error fetching animals:', error);
+        toast.error('An unexpected error occurred');
+      } finally {
+        setIsLoading(false);
+      }
     };
     
     fetchAnimals();

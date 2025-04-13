@@ -9,7 +9,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { DogIcon, CatIcon, MapPinIcon, ImageIcon, QrCodeIcon, AlertCircleIcon } from 'lucide-react';
+import { DogIcon, CatIcon, MapPinIcon, ImageIcon, QrCodeIcon, AlertCircleIcon, UserIcon, MailIcon, PhoneIcon } from 'lucide-react';
+import { supabase } from '../integrations/supabase/client';
+import { v4 as uuidv4 } from 'uuid';
 
 const AddAnimalPage = () => {
   const navigate = useNavigate();
@@ -22,6 +24,9 @@ const AddAnimalPage = () => {
     mapLink: '',
     photo: null as File | null,
     qrCode: null as File | null,
+    uploaderName: '',
+    uploaderEmail: '',
+    uploaderContact: '',
   });
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [qrCodePreview, setQrCodePreview] = useState<string | null>(null);
@@ -75,7 +80,28 @@ const AddAnimalPage = () => {
     reader.readAsDataURL(file);
   };
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const uploadFile = async (file: File, path: string) => {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${uuidv4()}.${fileExt}`;
+    const filePath = `${path}/${fileName}`;
+    
+    const { data, error } = await supabase.storage
+      .from('animals')
+      .upload(filePath, file);
+      
+    if (error) {
+      throw new Error(`Error uploading file: ${error.message}`);
+    }
+    
+    // Get public URL
+    const { data: { publicUrl } } = supabase.storage
+      .from('animals')
+      .getPublicUrl(filePath);
+      
+    return publicUrl;
+  };
+  
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Validate form
@@ -94,14 +120,56 @@ const AddAnimalPage = () => {
       return;
     }
     
+    if (!formData.uploaderName.trim()) {
+      toast.error("Please provide your name");
+      return;
+    }
+    
+    if (!formData.uploaderEmail.trim()) {
+      toast.error("Please provide your email");
+      return;
+    }
+    
     setLoading(true);
     
-    // Simulate form submission
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      // Upload QR code
+      const qrCodeUrl = await uploadFile(formData.qrCode, 'qr-codes');
+      
+      // Upload photo if provided
+      let photoUrl = null;
+      if (formData.photo) {
+        photoUrl = await uploadFile(formData.photo, 'photos');
+      }
+      
+      // Save animal data to Supabase
+      const { data, error } = await supabase
+        .from('animals')
+        .insert({
+          type: formData.type,
+          count: formData.count,
+          health_condition: formData.healthCondition,
+          address: formData.address,
+          map_url: formData.mapLink,
+          photo_url: photoUrl,
+          qr_code_url: qrCodeUrl,
+          uploader_name: formData.uploaderName,
+          uploader_email: formData.uploaderEmail,
+          uploader_contact: formData.uploaderContact || null,
+        });
+      
+      if (error) {
+        throw new Error(`Error saving animal data: ${error.message}`);
+      }
+      
       toast.success("Animal information submitted successfully!");
       navigate('/home');
-    }, 1500);
+    } catch (error) {
+      console.error('Error submitting animal data:', error);
+      toast.error(`Submission failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setLoading(false);
+    }
   };
   
   return (
@@ -209,6 +277,47 @@ const AddAnimalPage = () => {
                   <p className="text-xs text-muted-foreground mt-1">
                     Tip: Open Google Maps, drop a pin at the location, tap "Share", and copy the link.
                   </p>
+                </div>
+              </div>
+
+              {/* Uploader Information */}
+              <div className="space-y-4">
+                <div className="flex items-center">
+                  <UserIcon className="mr-2 h-5 w-5 text-pawsBlue" />
+                  <Label className="text-lg font-medium">Your Information</Label>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="uploaderName">Your Name</Label>
+                  <Input
+                    id="uploaderName"
+                    name="uploaderName"
+                    placeholder="Your full name"
+                    value={formData.uploaderName}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="uploaderEmail">Your Email</Label>
+                  <Input
+                    id="uploaderEmail"
+                    name="uploaderEmail"
+                    type="email"
+                    placeholder="your.email@example.com"
+                    value={formData.uploaderEmail}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="uploaderContact">Your Contact Number (Optional)</Label>
+                  <Input
+                    id="uploaderContact"
+                    name="uploaderContact"
+                    placeholder="Your phone number"
+                    value={formData.uploaderContact}
+                    onChange={handleInputChange}
+                  />
                 </div>
               </div>
               

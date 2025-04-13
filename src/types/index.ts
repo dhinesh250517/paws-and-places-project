@@ -18,7 +18,9 @@ export interface Animal {
   };
   qrCodeUrl: string;
   photo?: string;
-  uploadedBy: string;
+  uploaderName: string;
+  uploaderEmail: string;
+  uploaderContact?: string;
   createdAt: Date;
 }
 
@@ -28,4 +30,20 @@ export interface TeamMember {
   role: string;
   bio?: string;
   image?: string;
+}
+
+// Database Animal type mapping to our Supabase schema
+export interface DbAnimal {
+  id: string;
+  type: string;
+  count: number;
+  health_condition: string;
+  address: string;
+  map_url: string;
+  photo_url: string | null;
+  qr_code_url: string;
+  uploader_name: string;
+  uploader_email: string;
+  uploader_contact: string | null;
+  created_at: string;
 }
