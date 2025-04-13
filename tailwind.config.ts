@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,7 +62,33 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				}
+				},
+				pawsOrange: {
+					DEFAULT: '#FF9843',
+					50: '#FFF4EB',
+					100: '#FFE9D7',
+					200: '#FFD3AF',
+					300: '#FFBE87',
+					400: '#FFA85F',
+					500: '#FF9843',
+					600: '#FF7D0B',
+					700: '#D36400',
+					800: '#9B4800',
+					900: '#632D00'
+				},
+				pawsBlue: {
+					DEFAULT: '#4F9EC5',
+					50: '#ECF4F8',
+					100: '#D8E8F1',
+					200: '#B1D1E3',
+					300: '#8BBAD5',
+					400: '#64A3C7',
+					500: '#4F9EC5',
+					600: '#367DA1',
+					700: '#285C76',
+					800: '#1B3C4C',
+					900: '#0D1D22'
+				},
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
@@ -84,11 +111,17 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'paw-wave': {
+					'0%, 100%': { transform: 'rotate(0deg)' },
+					'25%': { transform: 'rotate(-10deg)' },
+					'75%': { transform: 'rotate(10deg)' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'paw-wave': 'paw-wave 1.5s ease-in-out infinite'
 			}
 		}
 	},
