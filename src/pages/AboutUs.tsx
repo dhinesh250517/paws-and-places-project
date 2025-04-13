@@ -21,14 +21,19 @@ const teamMembers = [
     bio: 'Creates intuitive user experiences. Volunteers at local animal shelters in free time.',
   },
   {
-    name: 'Logeshwaran',
+    name: 'Jayavishal',
     role: 'Full Stack Developer',
     bio: 'Works on integration between frontend and backend systems. Advocate for stray animal care.',
   },
   {
+    name: 'Logeshwaran',
+    role: 'technical support',
+    bio: 'Animal lover with technical knowledge',
+  },
+  {
     name: 'Rakshaya',
-    role: 'Project Manager',
-    bio: 'Coordinates team efforts and community outreach. Has rescued 5 stray cats over the years.',
+    role: 'technical support',
+    bio: 'supervising the technical works',
   },
 ];
 
