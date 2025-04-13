@@ -47,3 +47,4 @@ export interface DbAnimal {
   uploader_contact: string | null;
   created_at: string;
 }
+

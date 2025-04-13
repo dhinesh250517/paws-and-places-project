@@ -13,7 +13,7 @@ interface AnimalCardProps {
 }
 
 const AnimalCard: React.FC<AnimalCardProps> = ({ animal }) => {
-  const { type, count, healthCondition, location, qrCodeUrl, photo, createdAt, uploaderName, uploaderEmail, uploaderContact } = animal;
+  const { type, count, healthCondition, location, qrCodeUrl, createdAt, uploaderName, uploaderEmail, uploaderContact } = animal;
   
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString('en-US', {
@@ -51,22 +51,8 @@ const AnimalCard: React.FC<AnimalCardProps> = ({ animal }) => {
         </CardTitle>
       </CardHeader>
       <CardContent className="pb-2 flex-grow">
-        <div className="aspect-video relative rounded-md overflow-hidden bg-muted mb-4">
-          {photo ? (
-            <img 
-              src={photo} 
-              alt={`Stray ${type}`} 
-              className="object-cover w-full h-full"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-muted">
-              {type === 'dog' ? (
-                <DogIcon className="h-16 w-16 text-muted-foreground opacity-50" />
-              ) : (
-                <CatIcon className="h-16 w-16 text-muted-foreground opacity-50" />
-              )}
-            </div>
-          )}
+        <div className="border-l-4 border-pawsBlue-100 pl-3 mb-4 italic text-sm">
+          For adoption and accurate location details, please contact the uploader directly.
         </div>
         
         <div className="space-y-3">
@@ -91,9 +77,9 @@ const AnimalCard: React.FC<AnimalCardProps> = ({ animal }) => {
             </Button>
           </div>
 
-          <div>
-            <div className="text-sm font-medium mb-1 flex items-center">
-              <UserIcon className="h-4 w-4 mr-1 text-pawsBlue" />
+          <div className="bg-gray-50 p-3 rounded-md border">
+            <div className="text-sm font-medium mb-2 flex items-center text-pawsBlue">
+              <UserIcon className="h-4 w-4 mr-1" />
               Contact Details:
             </div>
             <div className="text-sm text-gray-600">
@@ -143,8 +129,8 @@ const AnimalCard: React.FC<AnimalCardProps> = ({ animal }) => {
               <p className="mt-4 text-center text-sm text-gray-600">
                 Scan this QR code with your GPay app to donate to the caretaker of this animal.
               </p>
-              <div className="mt-4 text-center">
-                <div className="text-sm font-medium mb-1">Uploader Details:</div>
+              <div className="mt-4 text-center bg-gray-50 p-3 rounded-md border w-full">
+                <div className="text-sm font-medium mb-1 text-pawsBlue">Uploader Details:</div>
                 <p className="text-sm text-gray-600">{uploaderName}</p>
                 <p className="text-sm text-gray-600">{uploaderEmail}</p>
                 {uploaderContact && <p className="text-sm text-gray-600">{uploaderContact}</p>}

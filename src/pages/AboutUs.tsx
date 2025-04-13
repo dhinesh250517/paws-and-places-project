@@ -2,38 +2,33 @@
 import React from 'react';
 import Layout from '../components/Layout';
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { UserIcon, GithubIcon, LinkedinIcon, ExternalLinkIcon, HeartIcon, PawPrintIcon, ShieldIcon, HomeIcon } from 'lucide-react';
+import { UserIcon, HeartIcon, PawPrintIcon, ShieldIcon, HomeIcon } from 'lucide-react';
 
 const teamMembers = [
   {
     name: 'Dhinesh',
     role: 'Frontend Developer',
     bio: 'Passionate about creating user-friendly interfaces and animal welfare.',
-    image: 'https://i.pravatar.cc/150?img=11',
   },
   {
     name: 'Lakshya',
     role: 'Backend Developer',
     bio: 'Specializes in database design and server optimization. Animal lover with 2 rescue dogs.',
-    image: 'https://i.pravatar.cc/150?img=12',
   },
   {
     name: 'Janani',
     role: 'UX Designer',
     bio: 'Creates intuitive user experiences. Volunteers at local animal shelters in free time.',
-    image: 'https://i.pravatar.cc/150?img=13',
   },
   {
     name: 'Logeshwaran',
     role: 'Full Stack Developer',
     bio: 'Works on integration between frontend and backend systems. Advocate for stray animal care.',
-    image: 'https://i.pravatar.cc/150?img=14',
   },
   {
     name: 'Rakshaya',
     role: 'Project Manager',
     bio: 'Coordinates team efforts and community outreach. Has rescued 5 stray cats over the years.',
-    image: 'https://i.pravatar.cc/150?img=15',
   },
 ];
 
@@ -111,42 +106,12 @@ const AboutUsPage = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {teamMembers.map((member, index) => (
               <Card key={index} className="overflow-hidden">
-                <div className="aspect-video bg-pawsOrange-50 relative">
-                  <img 
-                    src={member.image} 
-                    alt={member.name} 
-                    className="object-cover w-full h-full"
-                  />
-                </div>
                 <CardHeader className="pb-2">
                   <h3 className="text-xl font-bold">{member.name}</h3>
                   <p className="text-pawsBlue font-medium">{member.role}</p>
                 </CardHeader>
                 <CardContent>
                   <p className="text-gray-600">{member.bio}</p>
-                  <div className="mt-4 flex space-x-3">
-                    <a 
-                      href="#" 
-                      className="text-gray-500 hover:text-pawsOrange transition-colors"
-                      aria-label={`${member.name}'s GitHub`}
-                    >
-                      <GithubIcon className="h-5 w-5" />
-                    </a>
-                    <a 
-                      href="#" 
-                      className="text-gray-500 hover:text-pawsBlue transition-colors"
-                      aria-label={`${member.name}'s LinkedIn`}
-                    >
-                      <LinkedinIcon className="h-5 w-5" />
-                    </a>
-                    <a 
-                      href="#" 
-                      className="text-gray-500 hover:text-pawsOrange transition-colors"
-                      aria-label={`${member.name}'s website`}
-                    >
-                      <ExternalLinkIcon className="h-5 w-5" />
-                    </a>
-                  </div>
                 </CardContent>
               </Card>
             ))}
