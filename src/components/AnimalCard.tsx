@@ -51,8 +51,34 @@ const AnimalCard: React.FC<AnimalCardProps> = ({ animal }) => {
         </CardTitle>
       </CardHeader>
       <CardContent className="pb-2 flex-grow">
-        <div className="border-l-4 border-pawsBlue-100 pl-3 mb-4 italic text-sm">
-          For adoption and accurate location details, please contact the uploader directly.
+        <div className="mb-4 flex justify-center">
+          <div className="relative w-full max-w-xs aspect-square bg-gray-100 rounded-lg overflow-hidden">
+            <div className="absolute inset-0 flex items-center justify-center">
+              {type === 'dog' ? 
+                <img 
+                  src="/placeholder-dog.jpg" 
+                  alt="Dog placeholder" 
+                  className="object-cover w-full h-full"
+                  onError={(e) => {
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = "https://placehold.co/300x300?text=Feed/Adopt+Me";
+                  }} 
+                /> : 
+                <img 
+                  src="/placeholder-cat.jpg" 
+                  alt="Cat placeholder" 
+                  className="object-cover w-full h-full"
+                  onError={(e) => {
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = "https://placehold.co/300x300?text=Feed/Adopt+Me";
+                  }}  
+                />
+              }
+              <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white text-center py-2">
+                Feed/Adopt Me
+              </div>
+            </div>
+          </div>
         </div>
         
         <div className="space-y-3">
@@ -146,6 +172,10 @@ const AnimalCard: React.FC<AnimalCardProps> = ({ animal }) => {
           <HeartIcon className="h-4 w-4 mr-2" />
           Adopt / Help
         </Button>
+        
+        <div className="text-center text-sm text-gray-600 italic mt-2">
+          For adoption and accurate location details, please contact the uploader directly.
+        </div>
       </CardFooter>
     </Card>
   );
