@@ -16,6 +16,12 @@ interface AnimalCardProps {
 const AnimalCard: React.FC<AnimalCardProps> = ({ animal }) => {
   const { type, count, healthCondition, location, qrCodeUrl, createdAt, uploaderName, uploaderEmail, uploaderContact, isEmergency } = animal;
   
+  // Use these actual image URLs instead of the placeholder paths
+  const animalImages = {
+    dog: "https://images.unsplash.com/photo-1543466835-00a7907e9de1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8ZG9nfGVufDB8fDB8fHww&auto=format&fit=crop&w=600&q=60",
+    cat: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8Y2F0fGVufDB8fDB8fHww&auto=format&fit=crop&w=600&q=60"
+  };
+  
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -62,7 +68,7 @@ const AnimalCard: React.FC<AnimalCardProps> = ({ animal }) => {
             <div className="mb-4 flex justify-center cursor-pointer">
               <div className="relative w-full max-w-xs aspect-square bg-gray-100 rounded-lg overflow-hidden">
                 <img 
-                  src={type === 'dog' ? "/ai-dog-image.jpg" : "/ai-cat-image.jpg"}
+                  src={type === 'dog' ? animalImages.dog : animalImages.cat}
                   alt={`${type} in need`}
                   className="object-cover w-full h-full"
                 />

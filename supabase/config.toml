@@ -1,1 +1,5 @@
+
 project_id = "nodusfxmpofpimpmvhjb"
+
+[functions.send-notification]
+verify_jwt = false

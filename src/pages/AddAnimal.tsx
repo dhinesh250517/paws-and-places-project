@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
@@ -129,18 +128,19 @@ const AddAnimalPage = () => {
     uploaderContact?: string;
   }) => {
     try {
-      // In a real application, this would call an SMS API service
-      // For demonstration, we'll just log the notification message
-      console.log(`EMERGENCY NOTIFICATION to +91 9150231058: 
-        ${animalInfo.count} ${animalInfo.type}(s) needs urgent help at ${animalInfo.address}. 
-        Condition: ${animalInfo.healthCondition}. 
-        Contact: ${animalInfo.uploaderName} ${animalInfo.uploaderContact || 'no phone provided'}`);
+      // Call our Supabase Edge Function to send the notification
+      const { data, error } = await supabase.functions.invoke('send-notification', {
+        body: { animal: animalInfo }
+      });
       
-      // Simulate successful notification
+      if (error) throw error;
+      
       toast.success("Emergency notification sent to responder");
+      return data;
     } catch (error) {
       console.error("Error sending notification:", error);
       toast.error("Failed to send emergency notification");
+      throw error;
     }
   };
   
