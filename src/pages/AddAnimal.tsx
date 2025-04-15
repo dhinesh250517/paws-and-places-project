@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
@@ -16,7 +17,8 @@ import {
   UserIcon, 
   MailIcon, 
   PhoneIcon,
-  AlertTriangleIcon 
+  AlertTriangleIcon,
+  QrCode
 } from 'lucide-react';
 import { supabase } from '../integrations/supabase/client';
 import { v4 as uuidv4 } from 'uuid';
@@ -400,7 +402,7 @@ const AddAnimalPage = () => {
               {/* Upload GPay QR */}
               <div className="space-y-2">
                 <Label htmlFor="qrCode" className="flex items-center">
-                  <QrCodeIcon className="mr-2 h-5 w-5" />
+                  <QrCode className="mr-2 h-5 w-5" />
                   Upload GPay QR Code
                 </Label>
                 <Input
