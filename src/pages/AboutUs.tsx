@@ -7,23 +7,23 @@ import { UserIcon, HeartIcon, PawPrintIcon, ShieldIcon, HomeIcon } from 'lucide-
 const teamMembers = [
   {
     name: 'Dhinesh',
-    role: 'Frontend Developer',
+    role: 'full stack developer',
     bio: 'Passionate about creating user-friendly interfaces and animal welfare.',
   },
   {
     name: 'Lakshya',
-    role: 'Backend Developer',
-    bio: 'Specializes in database design and server optimization. Animal lover with 2 rescue dogs.',
+    role: 'Project Head',
+    bio: 'Driving strategic execution and seamless operations with a sharp focus on project excellence and team synergy.',
   },
   {
     name: 'Janani',
-    role: 'UX Designer',
+    role: 'Innovation Head',
     bio: 'Creates intuitive user experiences. Volunteers at local animal shelters in free time.',
   },
   {
     name: 'Jayavishal',
-    role: 'Full Stack Developer',
-    bio: 'Works on integration between frontend and backend systems. Advocate for stray animal care.',
+    role: 'UX Designerr',
+    bio: 'Works on users attractive pages. Advocate for stray animal care.',
   },
   {
     name: 'Logeshwaran',
@@ -32,8 +32,8 @@ const teamMembers = [
   },
   {
     name: 'Rakshaya',
-    role: 'technical support',
-    bio: 'supervising the technical works',
+    role: 'Project Coordinator',
+    bio: 'Oversees the day-to-day flow, timelines, and team collaboration',
   },
 ];
 
