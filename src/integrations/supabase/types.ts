@@ -12,10 +12,15 @@ export type Database = {
       animals: {
         Row: {
           address: string
+          adopted_at: string | null
+          adopter_contact: string | null
+          adopter_email: string | null
+          adopter_name: string | null
           count: number
           created_at: string
           health_condition: string
           id: string
+          is_adopted: boolean | null
           is_emergency: boolean
           map_url: string
           photo_url: string | null
@@ -27,10 +32,15 @@ export type Database = {
         }
         Insert: {
           address: string
+          adopted_at?: string | null
+          adopter_contact?: string | null
+          adopter_email?: string | null
+          adopter_name?: string | null
           count: number
           created_at?: string
           health_condition: string
           id?: string
+          is_adopted?: boolean | null
           is_emergency?: boolean
           map_url: string
           photo_url?: string | null
@@ -42,10 +52,15 @@ export type Database = {
         }
         Update: {
           address?: string
+          adopted_at?: string | null
+          adopter_contact?: string | null
+          adopter_email?: string | null
+          adopter_name?: string | null
           count?: number
           created_at?: string
           health_condition?: string
           id?: string
+          is_adopted?: boolean | null
           is_emergency?: boolean
           map_url?: string
           photo_url?: string | null

@@ -1,4 +1,3 @@
-
 // User type for authentication
 export interface User {
   id: string;

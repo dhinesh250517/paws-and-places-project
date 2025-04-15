@@ -1,5 +1,4 @@
 
-// This is a Supabase Edge Function that will handle updating adoption status
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
 
@@ -36,8 +35,6 @@ serve(async (req) => {
       .select();
     
     if (error) throw error;
-    
-    console.log(`Animal ${id} adoption status updated to: ${isAdopted ? "Adopted" : "Not adopted"}`);
     
     // Return success response
     return new Response(

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
 import AnimalCard from '../components/AnimalCard';
@@ -17,7 +16,6 @@ const HomePage = () => {
   const [adoptionStatus, setAdoptionStatus] = useState('all');
   const [isLoading, setIsLoading] = useState(true);
   
-  // Fetch animals from Supabase
   useEffect(() => {
     const fetchAnimals = async () => {
       try {
@@ -33,7 +31,6 @@ const HomePage = () => {
           return;
         }
         
-        // Map DB animals to our frontend Animal type
         const mappedAnimals = (dbAnimals as DbAnimal[]).map(animal => ({
           id: animal.id,
           type: animal.type as 'dog' | 'cat',
@@ -70,22 +67,18 @@ const HomePage = () => {
     fetchAnimals();
   }, []);
   
-  // Filter animals based on search, type and adoption status
   useEffect(() => {
     let results = animals;
     
-    // Filter by type
     if (animalType !== 'all') {
       results = results.filter(animal => animal.type === animalType);
     }
     
-    // Filter by adoption status
     if (adoptionStatus !== 'all') {
       const isAdopted = adoptionStatus === 'adopted';
       results = results.filter(animal => animal.isAdopted === isAdopted);
     }
     
-    // Filter by search term
     if (searchTerm) {
       const lowercasedSearch = searchTerm.toLowerCase();
       results = results.filter(animal => 
@@ -105,7 +98,6 @@ const HomePage = () => {
           <p className="text-gray-600">Browse listings of stray animals that need your help with food, care, or adoption.</p>
         </div>
         
-        {/* Search and filter */}
         <div className="flex flex-col sm:flex-row gap-4 mb-8">
           <div className="relative flex-grow">
             <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
@@ -148,7 +140,6 @@ const HomePage = () => {
           </div>
         </div>
         
-        {/* Animal cards */}
         {isLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(6)].map((_, i) => (
