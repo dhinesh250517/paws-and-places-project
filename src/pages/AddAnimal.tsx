@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
@@ -13,8 +12,6 @@ import {
   DogIcon, 
   CatIcon, 
   MapPinIcon, 
-  ImageIcon, 
-  QrCodeIcon, 
   AlertCircleIcon, 
   UserIcon, 
   MailIcon, 
@@ -23,7 +20,6 @@ import {
 } from 'lucide-react';
 import { supabase } from '../integrations/supabase/client';
 import { v4 as uuidv4 } from 'uuid';
-import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 
 const AddAnimalPage = () => {
@@ -400,8 +396,6 @@ const AddAnimalPage = () => {
                   />
                 </div>
               </div>
-              
-              {/* No need for photo upload since we're using AI-generated images */}
               
               {/* Upload GPay QR */}
               <div className="space-y-2">

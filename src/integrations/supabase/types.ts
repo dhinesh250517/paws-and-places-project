@@ -16,6 +16,7 @@ export type Database = {
           created_at: string
           health_condition: string
           id: string
+          is_emergency: boolean
           map_url: string
           photo_url: string | null
           qr_code_url: string
@@ -30,6 +31,7 @@ export type Database = {
           created_at?: string
           health_condition: string
           id?: string
+          is_emergency?: boolean
           map_url: string
           photo_url?: string | null
           qr_code_url: string
@@ -44,6 +46,7 @@ export type Database = {
           created_at?: string
           health_condition?: string
           id?: string
+          is_emergency?: boolean
           map_url?: string
           photo_url?: string | null
           qr_code_url?: string
