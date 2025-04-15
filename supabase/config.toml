@@ -3,3 +3,6 @@ project_id = "nodusfxmpofpimpmvhjb"
 
 [functions.send-notification]
 verify_jwt = false
+
+[functions.update-adoption-status]
+verify_jwt = false

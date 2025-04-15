@@ -14,6 +14,7 @@ const HomePage = () => {
   const [filteredAnimals, setFilteredAnimals] = useState<Animal[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [animalType, setAnimalType] = useState('all');
+  const [adoptionStatus, setAdoptionStatus] = useState('all');
   const [isLoading, setIsLoading] = useState(true);
   
   // Fetch animals from Supabase
@@ -48,6 +49,12 @@ const HomePage = () => {
           uploaderEmail: animal.uploader_email,
           uploaderContact: animal.uploader_contact || undefined,
           createdAt: new Date(animal.created_at),
+          isEmergency: animal.is_emergency,
+          isAdopted: animal.is_adopted || false,
+          adopterName: animal.adopter_name || undefined,
+          adopterEmail: animal.adopter_email || undefined,
+          adopterContact: animal.adopter_contact || undefined,
+          adoptedAt: animal.adopted_at ? new Date(animal.adopted_at) : undefined,
         }));
         
         setAnimals(mappedAnimals);
@@ -63,13 +70,19 @@ const HomePage = () => {
     fetchAnimals();
   }, []);
   
-  // Filter animals based on search and type
+  // Filter animals based on search, type and adoption status
   useEffect(() => {
     let results = animals;
     
     // Filter by type
     if (animalType !== 'all') {
       results = results.filter(animal => animal.type === animalType);
+    }
+    
+    // Filter by adoption status
+    if (adoptionStatus !== 'all') {
+      const isAdopted = adoptionStatus === 'adopted';
+      results = results.filter(animal => animal.isAdopted === isAdopted);
     }
     
     // Filter by search term
@@ -82,7 +95,7 @@ const HomePage = () => {
     }
     
     setFilteredAnimals(results);
-  }, [searchTerm, animalType, animals]);
+  }, [searchTerm, animalType, adoptionStatus, animals]);
   
   return (
     <Layout>
@@ -115,6 +128,21 @@ const HomePage = () => {
                 <SelectItem value="all">All Animals</SelectItem>
                 <SelectItem value="dog">Dogs Only</SelectItem>
                 <SelectItem value="cat">Cats Only</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="w-full sm:w-48">
+            <Select 
+              value={adoptionStatus} 
+              onValueChange={setAdoptionStatus}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Adoption Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="available">Available</SelectItem>
+                <SelectItem value="adopted">Adopted</SelectItem>
               </SelectContent>
             </Select>
           </div>
