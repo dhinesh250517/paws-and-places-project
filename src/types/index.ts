@@ -22,6 +22,7 @@ export interface Animal {
   uploaderEmail: string;
   uploaderContact?: string;
   createdAt: Date;
+  isEmergency?: boolean;
 }
 
 // Team Member type for About page
@@ -46,5 +47,5 @@ export interface DbAnimal {
   uploader_email: string;
   uploader_contact: string | null;
   created_at: string;
+  is_emergency: boolean;
 }
-

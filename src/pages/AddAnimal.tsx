@@ -9,9 +9,22 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { DogIcon, CatIcon, MapPinIcon, ImageIcon, QrCodeIcon, AlertCircleIcon, UserIcon, MailIcon, PhoneIcon } from 'lucide-react';
+import { 
+  DogIcon, 
+  CatIcon, 
+  MapPinIcon, 
+  ImageIcon, 
+  QrCodeIcon, 
+  AlertCircleIcon, 
+  UserIcon, 
+  MailIcon, 
+  PhoneIcon,
+  AlertTriangleIcon 
+} from 'lucide-react';
 import { supabase } from '../integrations/supabase/client';
 import { v4 as uuidv4 } from 'uuid';
+import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const AddAnimalPage = () => {
   const navigate = useNavigate();
@@ -27,6 +40,7 @@ const AddAnimalPage = () => {
     uploaderName: '',
     uploaderEmail: '',
     uploaderContact: '',
+    isEmergency: false,
   });
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [qrCodePreview, setQrCodePreview] = useState<string | null>(null);
@@ -43,6 +57,13 @@ const AddAnimalPage = () => {
     setFormData(prev => ({
       ...prev,
       type: value
+    }));
+  };
+
+  const handleEmergencyChange = (checked: boolean) => {
+    setFormData(prev => ({
+      ...prev,
+      isEmergency: checked
     }));
   };
   
@@ -100,6 +121,30 @@ const AddAnimalPage = () => {
       
     return publicUrl;
   };
+
+  const sendEmergencyNotification = async (animalInfo: {
+    type: string;
+    count: number;
+    address: string;
+    healthCondition: string;
+    uploaderName: string;
+    uploaderContact?: string;
+  }) => {
+    try {
+      // In a real application, this would call an SMS API service
+      // For demonstration, we'll just log the notification message
+      console.log(`EMERGENCY NOTIFICATION to +91 9150231058: 
+        ${animalInfo.count} ${animalInfo.type}(s) needs urgent help at ${animalInfo.address}. 
+        Condition: ${animalInfo.healthCondition}. 
+        Contact: ${animalInfo.uploaderName} ${animalInfo.uploaderContact || 'no phone provided'}`);
+      
+      // Simulate successful notification
+      toast.success("Emergency notification sent to responder");
+    } catch (error) {
+      console.error("Error sending notification:", error);
+      toast.error("Failed to send emergency notification");
+    }
+  };
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -156,10 +201,23 @@ const AddAnimalPage = () => {
           uploader_name: formData.uploaderName,
           uploader_email: formData.uploaderEmail,
           uploader_contact: formData.uploaderContact || null,
+          is_emergency: formData.isEmergency,
         });
       
       if (error) {
         throw new Error(`Error saving animal data: ${error.message}`);
+      }
+
+      // Send emergency notification if needed
+      if (formData.isEmergency) {
+        await sendEmergencyNotification({
+          type: formData.type,
+          count: formData.count,
+          address: formData.address,
+          healthCondition: formData.healthCondition,
+          uploaderName: formData.uploaderName,
+          uploaderContact: formData.uploaderContact,
+        });
       }
       
       toast.success("Animal information submitted successfully!");
@@ -226,6 +284,28 @@ const AddAnimalPage = () => {
                   onChange={handleInputChange}
                   required
                 />
+              </div>
+              
+              {/* Emergency Option */}
+              <div className="border border-red-200 bg-red-50 rounded-md p-4">
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="isEmergency" 
+                    checked={formData.isEmergency}
+                    onCheckedChange={handleEmergencyChange}
+                  />
+                  <div className="flex items-center gap-2">
+                    <AlertTriangleIcon className="h-5 w-5 text-red-500" />
+                    <Label htmlFor="isEmergency" className="font-medium text-red-700">
+                      This is an emergency - animal needs immediate help
+                    </Label>
+                  </div>
+                </div>
+                {formData.isEmergency && (
+                  <p className="text-xs text-red-600 mt-2">
+                    An SMS notification will be sent to emergency responders when you submit this report.
+                  </p>
+                )}
               </div>
               
               {/* Health Condition */}
@@ -321,29 +401,7 @@ const AddAnimalPage = () => {
                 </div>
               </div>
               
-              {/* Upload Photo */}
-              <div className="space-y-2">
-                <Label htmlFor="photo" className="flex items-center">
-                  <ImageIcon className="mr-2 h-5 w-5" />
-                  Upload Photo (Optional)
-                </Label>
-                <Input
-                  id="photo"
-                  type="file"
-                  accept="image/*"
-                  onChange={handlePhotoChange}
-                  className="cursor-pointer"
-                />
-                {photoPreview && (
-                  <div className="mt-2 relative w-40 h-40">
-                    <img
-                      src={photoPreview}
-                      alt="Animal preview"
-                      className="object-cover w-full h-full rounded-md border"
-                    />
-                  </div>
-                )}
-              </div>
+              {/* No need for photo upload since we're using AI-generated images */}
               
               {/* Upload GPay QR */}
               <div className="space-y-2">

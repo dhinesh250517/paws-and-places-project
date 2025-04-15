@@ -14,7 +14,7 @@ interface AnimalCardProps {
 }
 
 const AnimalCard: React.FC<AnimalCardProps> = ({ animal }) => {
-  const { type, count, healthCondition, location, qrCodeUrl, createdAt, uploaderName, uploaderEmail, uploaderContact } = animal;
+  const { type, count, healthCondition, location, qrCodeUrl, createdAt, uploaderName, uploaderEmail, uploaderContact, isEmergency } = animal;
   
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString('en-US', {
@@ -38,10 +38,15 @@ const AnimalCard: React.FC<AnimalCardProps> = ({ animal }) => {
     <Card className="h-full flex flex-col">
       <CardHeader className="pb-2">
         <div className="flex justify-between items-start">
-          <Badge variant={type === 'dog' ? 'default' : 'secondary'} className={type === 'dog' ? 'bg-pawsOrange' : 'bg-pawsBlue'}>
-            {type === 'dog' ? <DogIcon className="h-3 w-3 mr-1" /> : <CatIcon className="h-3 w-3 mr-1" />}
-            {count > 1 ? `${count} ${type}s` : type}
-          </Badge>
+          <div className="flex space-x-2">
+            <Badge variant={type === 'dog' ? 'default' : 'secondary'} className={type === 'dog' ? 'bg-pawsOrange' : 'bg-pawsBlue'}>
+              {type === 'dog' ? <DogIcon className="h-3 w-3 mr-1" /> : <CatIcon className="h-3 w-3 mr-1" />}
+              {count > 1 ? `${count} ${type}s` : type}
+            </Badge>
+            {isEmergency && (
+              <Badge variant="destructive">EMERGENCY</Badge>
+            )}
+          </div>
           <div className="text-xs text-gray-500 flex items-center">
             <ClockIcon className="h-3 w-3 mr-1" />
             {formatDate(createdAt)}
@@ -57,13 +62,9 @@ const AnimalCard: React.FC<AnimalCardProps> = ({ animal }) => {
             <div className="mb-4 flex justify-center cursor-pointer">
               <div className="relative w-full max-w-xs aspect-square bg-gray-100 rounded-lg overflow-hidden">
                 <img 
-                  src={type === 'dog' ? "/placeholder-dog.jpg" : "/placeholder-cat.jpg"}
+                  src={type === 'dog' ? "/ai-dog-image.jpg" : "/ai-cat-image.jpg"}
                   alt={`${type} in need`}
                   className="object-cover w-full h-full"
-                  onError={(e) => {
-                    e.currentTarget.onerror = null;
-                    e.currentTarget.src = "https://placehold.co/300x300?text=Feed/Adopt+Me";
-                  }}
                 />
                 <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white text-center py-2">
                   Click to learn how to help
