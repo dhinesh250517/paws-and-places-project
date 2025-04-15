@@ -8,12 +8,12 @@ const teamMembers = [
   {
     name: 'Dhinesh',
     role: 'full stack developer',
-    bio: 'Passionate about creating user-friendly interfaces and animal welfare.',
+    bio: 'Founder of ZELABRIA,Passionate about creating user-friendly interfaces and animal welfare.',
   },
   {
     name: 'Lakshya',
     role: 'Project Head',
-    bio: 'Driving strategic execution and seamless operations with a sharp focus on project excellence and team synergy.',
+    bio: 'Driving strategic execution with a sharp focus on project excellence and team synergy.',
   },
   {
     name: 'Janani',
