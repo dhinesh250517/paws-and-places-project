@@ -19,6 +19,7 @@ const HomePage = () => {
   
   const fetchAnimals = async () => {
     try {
+      console.log('Fetching animals from database...');
       setIsLoading(true);
       const { data: dbAnimals, error } = await supabase
         .from('animals')
@@ -30,6 +31,8 @@ const HomePage = () => {
         toast.error('Failed to load animals');
         return;
       }
+      
+      console.log(`Received ${dbAnimals?.length || 0} animals from the database`);
       
       const mappedAnimals = (dbAnimals as DbAnimal[]).map(animal => ({
         id: animal.id,
@@ -72,20 +75,35 @@ const HomePage = () => {
     fetchAnimals();
     
     // Listen for real-time updates on the animals table
+    // This will ensure data is updated when animals are deleted
     const channel = supabase
       .channel('animal-changes')
       .on(
         'postgres_changes', 
-        { event: '*', schema: 'public', table: 'animals' }, 
-        () => {
-          // Refresh data when any change happens (insert, update, delete)
-          fetchAnimals();
+        { 
+          event: '*',  // Listen to all events (including DELETE)
+          schema: 'public', 
+          table: 'animals'
+        }, 
+        (payload) => {
+          console.log('Realtime update received:', payload);
+          if (payload.eventType === 'DELETE') {
+            console.log(`Animal deleted with ID: ${payload.old?.id}`);
+            // Immediately remove the deleted animal from the UI
+            setAnimals(prev => prev.filter(animal => animal.id !== payload.old.id));
+            setFilteredAnimals(prev => prev.filter(animal => animal.id !== payload.old.id));
+          } else {
+            // For other changes, just refresh the data
+            fetchAnimals();
+          }
         }
       )
       .subscribe();
     
+    // Refresh data when the page becomes visible
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
+        console.log('Page became visible, refreshing data...');
         fetchAnimals();
       }
     };

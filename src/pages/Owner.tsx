@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
@@ -217,6 +218,7 @@ const OwnerPage = () => {
   const confirmDeleteAnimal = async () => {
     if (!animalToDelete) return;
     try {
+      // Permanently delete the animal from the database
       const { error } = await supabase
         .from('animals')
         .delete()
@@ -230,9 +232,11 @@ const OwnerPage = () => {
       
       toast.success('Animal deleted successfully!');
       
+      // Close the dialog and reset the state
       setDeleteDialogOpen(false);
       setAnimalToDelete(null);
       
+      // Update local state to reflect the deletion
       setAnimals(prev => prev.filter(a => a.id !== animalToDelete));
       setPendingAdoptions(prev => prev.filter(a => a.id !== animalToDelete));
       setOldEntries(prev => prev.filter(a => a.id !== animalToDelete));
