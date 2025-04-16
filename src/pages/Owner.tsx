@@ -12,6 +12,7 @@ import { Animal, DbAnimal } from '../types';
 import { supabase } from '../integrations/supabase/client';
 import { toast } from 'sonner';
 import { CheckCircleIcon, XCircleIcon, TrashIcon, AlertTriangleIcon, BellIcon } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 const OwnerPage = () => {
   const navigate = useNavigate();
@@ -24,13 +25,14 @@ const OwnerPage = () => {
   const [verifyDialogOpen, setVerifyDialogOpen] = useState(false);
   const [currentAnimal, setCurrentAnimal] = useState<Animal | null>(null);
   const [showEmergencyAlert, setShowEmergencyAlert] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [animalToDelete, setAnimalToDelete] = useState<string | null>(null);
   const [adopterInfo, setAdopterInfo] = useState({
     name: '',
     email: '',
     contact: '',
   });
 
-  // Authentication check
   useEffect(() => {
     const isOwner = localStorage.getItem('ownerLoggedIn');
     if (!isOwner) {
@@ -39,7 +41,6 @@ const OwnerPage = () => {
     }
   }, [navigate]);
 
-  // Store owner login status when they log in
   useEffect(() => {
     localStorage.setItem('ownerLoggedIn', 'true');
     return () => {
@@ -47,7 +48,6 @@ const OwnerPage = () => {
     };
   }, []);
 
-  // Fetch all animals
   const fetchAnimals = async () => {
     try {
       setLoading(true);
@@ -87,13 +87,11 @@ const OwnerPage = () => {
       
       setAnimals(mappedAnimals);
       
-      // Filter animals that have adopterName but are not marked as adopted yet
       const pending = mappedAnimals.filter(
         animal => animal.adopterName && !animal.isAdopted
       );
       setPendingAdoptions(pending);
       
-      // Filter animals that are 30+ days old
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
       const old = mappedAnimals.filter(
@@ -101,20 +99,16 @@ const OwnerPage = () => {
       );
       setOldEntries(old);
       
-      // Filter adopted animals
       const adopted = mappedAnimals.filter(animal => animal.isAdopted);
       setAdoptedEntries(adopted);
       
-      // Filter emergency animals
       const emergency = mappedAnimals.filter(animal => animal.isEmergency);
       const newEmergencies = emergency.filter(
         em => !emergencyAnimals.some(existing => existing.id === em.id)
       );
       
-      // Set emergency animals
       setEmergencyAnimals(emergency);
       
-      // Show notification for new emergency animals
       if (newEmergencies.length > 0) {
         setShowEmergencyAlert(true);
         newEmergencies.forEach(animal => {
@@ -132,24 +126,20 @@ const OwnerPage = () => {
     }
   };
   
-  // Set up realtime subscription to refresh data when it changes
   useEffect(() => {
     fetchAnimals();
     
-    // Subscribe to changes in the animals table
     const channel = supabase
       .channel('animal-changes')
       .on(
         'postgres_changes', 
         { event: '*', schema: 'public', table: 'animals' }, 
         () => {
-          // Refresh data when any change happens (insert, update, delete)
           fetchAnimals();
         }
       )
       .subscribe();
     
-    // Cleanup subscription
     return () => {
       supabase.removeChannel(channel);
     };
@@ -169,7 +159,6 @@ const OwnerPage = () => {
     if (!currentAnimal) return;
     
     try {
-      // Call the edge function to update adoption status
       const { error } = await supabase.functions.invoke('update-adoption-status', {
         body: { 
           animalId: currentAnimal.id,
@@ -189,7 +178,6 @@ const OwnerPage = () => {
       
       toast.success('Adoption verified successfully!');
       
-      // Update local state
       setAnimals(prev => prev.map(animal => {
         if (animal.id === currentAnimal.id) {
           return {
@@ -204,7 +192,6 @@ const OwnerPage = () => {
         return animal;
       }));
       
-      // Update filtered lists
       setPendingAdoptions(prev => prev.filter(a => a.id !== currentAnimal.id));
       setAdoptedEntries(prev => [...prev, {
         ...currentAnimal,
@@ -222,27 +209,35 @@ const OwnerPage = () => {
     }
   };
   
-  const handleDeleteAnimal = async (animalId: string) => {
+  const handleDeleteAnimal = (animalId: string) => {
+    setAnimalToDelete(animalId);
+    setDeleteDialogOpen(true);
+  };
+  
+  const confirmDeleteAnimal = async () => {
+    if (!animalToDelete) return;
     try {
       const { error } = await supabase
         .from('animals')
         .delete()
-        .eq('id', animalId);
+        .eq('id', animalToDelete);
       
       if (error) {
         console.error('Error deleting animal:', error);
-        toast.error('Failed to delete animal');
+        toast.error('Failed to delete animal: ' + error.message);
         return;
       }
       
       toast.success('Animal deleted successfully!');
       
-      // Update local state
-      setAnimals(prev => prev.filter(a => a.id !== animalId));
-      setPendingAdoptions(prev => prev.filter(a => a.id !== animalId));
-      setOldEntries(prev => prev.filter(a => a.id !== animalId));
-      setAdoptedEntries(prev => prev.filter(a => a.id !== animalId));
-      setEmergencyAnimals(prev => prev.filter(a => a.id !== animalId));
+      setDeleteDialogOpen(false);
+      setAnimalToDelete(null);
+      
+      setAnimals(prev => prev.filter(a => a.id !== animalToDelete));
+      setPendingAdoptions(prev => prev.filter(a => a.id !== animalToDelete));
+      setOldEntries(prev => prev.filter(a => a.id !== animalToDelete));
+      setAdoptedEntries(prev => prev.filter(a => a.id !== animalToDelete));
+      setEmergencyAnimals(prev => prev.filter(a => a.id !== animalToDelete));
     } catch (error) {
       console.error('Error in deletion:', error);
       toast.error('Failed to delete animal');
@@ -251,7 +246,6 @@ const OwnerPage = () => {
   
   const rejectAdoption = async (animalId: string) => {
     try {
-      // Call the edge function to update adoption status
       const { error } = await supabase.functions.invoke('update-adoption-status', {
         body: { 
           animalId: animalId,
@@ -271,7 +265,6 @@ const OwnerPage = () => {
       
       toast.success('Adoption rejected successfully!');
       
-      // Update local state
       setAnimals(prev => prev.map(animal => {
         if (animal.id === animalId) {
           return {
@@ -286,7 +279,6 @@ const OwnerPage = () => {
         return animal;
       }));
       
-      // Update filtered lists
       setPendingAdoptions(prev => prev.filter(a => a.id !== animalId));
     } catch (error) {
       console.error('Error in adoption rejection:', error);
@@ -344,7 +336,6 @@ const OwnerPage = () => {
           <div className="text-center py-16">Loading...</div>
         ) : (
           <div className="space-y-10">
-            {/* Pending Adoptions Section */}
             <div>
               <h2 className="text-2xl font-semibold mb-4">Pending Adoptions</h2>
               {pendingAdoptions.length > 0 ? (
@@ -402,7 +393,6 @@ const OwnerPage = () => {
               )}
             </div>
             
-            {/* Old Entries Section */}
             <div>
               <h2 className="text-2xl font-semibold mb-4">Entries Older Than 30 Days</h2>
               {oldEntries.length > 0 ? (
@@ -454,7 +444,6 @@ const OwnerPage = () => {
               )}
             </div>
             
-            {/* Adopted Entries Section */}
             <div>
               <h2 className="text-2xl font-semibold mb-4">Adopted Animals</h2>
               {adoptedEntries.length > 0 ? (
@@ -502,7 +491,6 @@ const OwnerPage = () => {
               )}
             </div>
             
-            {/* Emergency Animals Section */}
             <div>
               <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
                 <AlertTriangleIcon className="h-5 w-5 text-red-500" />
@@ -553,7 +541,6 @@ const OwnerPage = () => {
               )}
             </div>
             
-            {/* All Animals Section */}
             <div>
               <h2 className="text-2xl font-semibold mb-4">All Animals</h2>
               <Table>
@@ -604,7 +591,6 @@ const OwnerPage = () => {
           </div>
         )}
         
-        {/* Verify Adoption Dialog */}
         <Dialog open={verifyDialogOpen} onOpenChange={setVerifyDialogOpen}>
           <DialogContent>
             <DialogHeader>
@@ -647,6 +633,26 @@ const OwnerPage = () => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+        
+        <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete this animal entry? This action cannot be undone and the entry will be permanently removed from the database.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setDeleteDialogOpen(false)}>Cancel</AlertDialogCancel>
+              <AlertDialogAction 
+                onClick={confirmDeleteAnimal} 
+                className="bg-red-500 hover:bg-red-600"
+              >
+                Yes, Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </Layout>
   );
