@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
 import AnimalCard from '../components/AnimalCard';
@@ -70,6 +71,19 @@ const HomePage = () => {
   useEffect(() => {
     fetchAnimals();
     
+    // Listen for real-time updates on the animals table
+    const channel = supabase
+      .channel('animal-changes')
+      .on(
+        'postgres_changes', 
+        { event: '*', schema: 'public', table: 'animals' }, 
+        () => {
+          // Refresh data when any change happens (insert, update, delete)
+          fetchAnimals();
+        }
+      )
+      .subscribe();
+    
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         fetchAnimals();
@@ -78,8 +92,10 @@ const HomePage = () => {
     
     document.addEventListener('visibilitychange', handleVisibilityChange);
     
+    // Clean up subscriptions on unmount
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
+      supabase.removeChannel(channel);
     };
   }, []);
   
