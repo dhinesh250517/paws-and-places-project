@@ -11,6 +11,7 @@ import Home from "./pages/Home";
 import AddAnimal from "./pages/AddAnimal";
 import AboutUs from "./pages/AboutUs";
 import NotFound from "./pages/NotFound";
+import Owner from "./pages/Owner";
 
 const queryClient = new QueryClient();
 
@@ -25,6 +26,7 @@ const App = () => (
           <Route path="/home" element={<Home />} />
           <Route path="/add" element={<AddAnimal />} />
           <Route path="/about" element={<AboutUs />} />
+          <Route path="/owner" element={<Owner />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

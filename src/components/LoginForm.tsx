@@ -31,7 +31,18 @@ const LoginForm = () => {
     e.preventDefault();
     setLoading(true);
     
-    // Simulate login API call
+    // Check if this is the owner/admin login
+    if (loginData.email === 'owner@gmail.com' && loginData.password === '12345') {
+      // Handle owner login
+      setTimeout(() => {
+        setLoading(false);
+        toast.success("Owner login successful!");
+        navigate('/owner');
+      }, 1000);
+      return;
+    }
+    
+    // Regular user login
     setTimeout(() => {
       setLoading(false);
       

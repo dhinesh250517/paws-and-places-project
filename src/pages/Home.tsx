@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
 import AnimalCard from '../components/AnimalCard';
@@ -54,8 +55,16 @@ const HomePage = () => {
           adoptedAt: animal.adopted_at ? new Date(animal.adopted_at) : undefined,
         }));
         
-        setAnimals(mappedAnimals);
-        setFilteredAnimals(mappedAnimals);
+        // Only show publicly verified adopted animals (those that have isAdopted=true)
+        // Animals with adopterName but isAdopted=false are pending verification
+        const publicAnimals = mappedAnimals.filter(animal => {
+          // Show if the animal is not adopted
+          // or if it's officially adopted (isAdopted=true)
+          return !animal.adopterName || (animal.adopterName && animal.isAdopted);
+        });
+        
+        setAnimals(publicAnimals);
+        setFilteredAnimals(publicAnimals);
       } catch (error) {
         console.error('Unexpected error fetching animals:', error);
         toast.error('An unexpected error occurred');
