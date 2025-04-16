@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
@@ -8,10 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Animal, DbAnimal } from '../types';
 import { supabase } from '../integrations/supabase/client';
 import { toast } from 'sonner';
-import { CheckCircleIcon, XCircleIcon, TrashIcon } from 'lucide-react';
+import { CheckCircleIcon, XCircleIcon, TrashIcon, AlertTriangleIcon, BellIcon } from 'lucide-react';
 
 const OwnerPage = () => {
   const navigate = useNavigate();
@@ -20,8 +20,10 @@ const OwnerPage = () => {
   const [pendingAdoptions, setPendingAdoptions] = useState<Animal[]>([]);
   const [oldEntries, setOldEntries] = useState<Animal[]>([]);
   const [adoptedEntries, setAdoptedEntries] = useState<Animal[]>([]);
+  const [emergencyAnimals, setEmergencyAnimals] = useState<Animal[]>([]);
   const [verifyDialogOpen, setVerifyDialogOpen] = useState(false);
   const [currentAnimal, setCurrentAnimal] = useState<Animal | null>(null);
+  const [showEmergencyAlert, setShowEmergencyAlert] = useState(false);
   const [adopterInfo, setAdopterInfo] = useState({
     name: '',
     email: '',
@@ -30,8 +32,6 @@ const OwnerPage = () => {
 
   // Authentication check
   useEffect(() => {
-    // In a real app, we would check if the user is authenticated as owner
-    // For now, we'll just check local storage
     const isOwner = localStorage.getItem('ownerLoggedIn');
     if (!isOwner) {
       toast.error('Unauthorized access');
@@ -48,72 +48,111 @@ const OwnerPage = () => {
   }, []);
 
   // Fetch all animals
-  useEffect(() => {
-    const fetchAnimals = async () => {
-      try {
-        setLoading(true);
-        const { data: dbAnimals, error } = await supabase
-          .from('animals')
-          .select('*')
-          .order('created_at', { ascending: false });
-        
-        if (error) {
-          console.error('Error fetching animals:', error);
-          toast.error('Failed to load animals');
-          return;
-        }
-        
-        const mappedAnimals = (dbAnimals as DbAnimal[]).map(animal => ({
-          id: animal.id,
-          type: animal.type as 'dog' | 'cat',
-          count: animal.count,
-          healthCondition: animal.health_condition,
-          location: {
-            address: animal.address,
-            mapUrl: animal.map_url,
-          },
-          qrCodeUrl: animal.qr_code_url,
-          photo: animal.photo_url || undefined,
-          uploaderName: animal.uploader_name,
-          uploaderEmail: animal.uploader_email,
-          uploaderContact: animal.uploader_contact || undefined,
-          createdAt: new Date(animal.created_at),
-          isEmergency: animal.is_emergency,
-          isAdopted: animal.is_adopted || false,
-          adopterName: animal.adopter_name || undefined,
-          adopterEmail: animal.adopter_email || undefined,
-          adopterContact: animal.adopter_contact || undefined,
-          adoptedAt: animal.adopted_at ? new Date(animal.adopted_at) : undefined,
-        }));
-        
-        setAnimals(mappedAnimals);
-        
-        // Filter animals that have adopterName but are not marked as adopted yet
-        const pending = mappedAnimals.filter(
-          animal => animal.adopterName && !animal.isAdopted
-        );
-        setPendingAdoptions(pending);
-        
-        // Filter animals that are 30+ days old
-        const thirtyDaysAgo = new Date();
-        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-        const old = mappedAnimals.filter(
-          animal => !animal.isAdopted && animal.createdAt < thirtyDaysAgo
-        );
-        setOldEntries(old);
-        
-        // Filter adopted animals
-        const adopted = mappedAnimals.filter(animal => animal.isAdopted);
-        setAdoptedEntries(adopted);
-      } catch (error) {
-        console.error('Unexpected error fetching animals:', error);
-        toast.error('An unexpected error occurred');
-      } finally {
-        setLoading(false);
+  const fetchAnimals = async () => {
+    try {
+      setLoading(true);
+      const { data: dbAnimals, error } = await supabase
+        .from('animals')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error('Error fetching animals:', error);
+        toast.error('Failed to load animals');
+        return;
       }
-    };
-    
+      
+      const mappedAnimals = (dbAnimals as DbAnimal[]).map(animal => ({
+        id: animal.id,
+        type: animal.type as 'dog' | 'cat',
+        count: animal.count,
+        healthCondition: animal.health_condition,
+        location: {
+          address: animal.address,
+          mapUrl: animal.map_url,
+        },
+        qrCodeUrl: animal.qr_code_url,
+        photo: animal.photo_url || undefined,
+        uploaderName: animal.uploader_name,
+        uploaderEmail: animal.uploader_email,
+        uploaderContact: animal.uploader_contact || undefined,
+        createdAt: new Date(animal.created_at),
+        isEmergency: animal.is_emergency,
+        isAdopted: animal.is_adopted || false,
+        adopterName: animal.adopter_name || undefined,
+        adopterEmail: animal.adopter_email || undefined,
+        adopterContact: animal.adopter_contact || undefined,
+        adoptedAt: animal.adopted_at ? new Date(animal.adopted_at) : undefined,
+      }));
+      
+      setAnimals(mappedAnimals);
+      
+      // Filter animals that have adopterName but are not marked as adopted yet
+      const pending = mappedAnimals.filter(
+        animal => animal.adopterName && !animal.isAdopted
+      );
+      setPendingAdoptions(pending);
+      
+      // Filter animals that are 30+ days old
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      const old = mappedAnimals.filter(
+        animal => !animal.isAdopted && animal.createdAt < thirtyDaysAgo
+      );
+      setOldEntries(old);
+      
+      // Filter adopted animals
+      const adopted = mappedAnimals.filter(animal => animal.isAdopted);
+      setAdoptedEntries(adopted);
+      
+      // Filter emergency animals
+      const emergency = mappedAnimals.filter(animal => animal.isEmergency);
+      const newEmergencies = emergency.filter(
+        em => !emergencyAnimals.some(existing => existing.id === em.id)
+      );
+      
+      // Set emergency animals
+      setEmergencyAnimals(emergency);
+      
+      // Show notification for new emergency animals
+      if (newEmergencies.length > 0) {
+        setShowEmergencyAlert(true);
+        newEmergencies.forEach(animal => {
+          toast.error(
+            `Emergency: ${animal.count} ${animal.type}(s) at ${animal.location.address}`, 
+            { duration: 8000 }
+          );
+        });
+      }
+    } catch (error) {
+      console.error('Unexpected error fetching animals:', error);
+      toast.error('An unexpected error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  // Set up realtime subscription to refresh data when it changes
+  useEffect(() => {
     fetchAnimals();
+    
+    // Subscribe to changes in the animals table
+    const channel = supabase
+      .channel('animal-changes')
+      .on(
+        'postgres_changes', 
+        { event: '*', schema: 'public', table: 'animals' }, 
+        () => {
+          // Refresh data when any change happens (insert, update, delete)
+          fetchAnimals();
+        }
+      )
+      .subscribe();
+    
+    // Cleanup subscription
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
   
   const handleVerifyAdoption = (animal: Animal) => {
@@ -203,6 +242,7 @@ const OwnerPage = () => {
       setPendingAdoptions(prev => prev.filter(a => a.id !== animalId));
       setOldEntries(prev => prev.filter(a => a.id !== animalId));
       setAdoptedEntries(prev => prev.filter(a => a.id !== animalId));
+      setEmergencyAnimals(prev => prev.filter(a => a.id !== animalId));
     } catch (error) {
       console.error('Error in deletion:', error);
       toast.error('Failed to delete animal');
@@ -260,6 +300,10 @@ const OwnerPage = () => {
     navigate('/');
   };
   
+  const dismissEmergencyAlert = () => {
+    setShowEmergencyAlert(false);
+  };
+  
   return (
     <Layout>
       <div className="paws-container py-8">
@@ -267,6 +311,34 @@ const OwnerPage = () => {
           <h1 className="text-3xl font-bold">Owner Admin Panel</h1>
           <Button variant="outline" onClick={handleLogout}>Logout</Button>
         </div>
+        
+        {showEmergencyAlert && emergencyAnimals.length > 0 && (
+          <Alert variant="destructive" className="mb-6">
+            <AlertTriangleIcon className="h-5 w-5" />
+            <AlertTitle className="flex items-center gap-2">
+              <BellIcon className="h-4 w-4" /> Emergency Animals Reported!
+            </AlertTitle>
+            <AlertDescription>
+              <p>There are {emergencyAnimals.length} emergency cases that need attention:</p>
+              <ul className="mt-2 list-disc pl-5">
+                {emergencyAnimals.slice(0, 3).map(animal => (
+                  <li key={animal.id} className="mt-1">
+                    {animal.count} {animal.type}(s) at {animal.location.address} - 
+                    <span className="font-medium"> {animal.healthCondition}</span>
+                  </li>
+                ))}
+                {emergencyAnimals.length > 3 && (
+                  <li className="mt-1">...and {emergencyAnimals.length - 3} more</li>
+                )}
+              </ul>
+              <div className="mt-3">
+                <Button size="sm" onClick={dismissEmergencyAlert} variant="outline">
+                  Dismiss
+                </Button>
+              </div>
+            </AlertDescription>
+          </Alert>
+        )}
         
         {loading ? (
           <div className="text-center py-16">Loading...</div>
@@ -430,6 +502,57 @@ const OwnerPage = () => {
               )}
             </div>
             
+            {/* Emergency Animals Section */}
+            <div>
+              <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
+                <AlertTriangleIcon className="h-5 w-5 text-red-500" />
+                Emergency Animals
+              </h2>
+              {emergencyAnimals.length > 0 ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Location</TableHead>
+                      <TableHead>Health Condition</TableHead>
+                      <TableHead>Uploader</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {emergencyAnimals.map((animal) => (
+                      <TableRow key={animal.id} className="bg-red-50">
+                        <TableCell>
+                          {animal.type === 'dog' ? '🐶 Dog' : '🐱 Cat'} ({animal.count})
+                        </TableCell>
+                        <TableCell>{animal.location.address}</TableCell>
+                        <TableCell className="font-medium text-red-600">
+                          {animal.healthCondition}
+                        </TableCell>
+                        <TableCell>
+                          {animal.uploaderName}<br/>
+                          <span className="text-sm text-gray-500">{animal.uploaderContact || animal.uploaderEmail}</span>
+                        </TableCell>
+                        <TableCell>
+                          <Button 
+                            size="sm" 
+                            variant="destructive"
+                            onClick={() => handleDeleteAnimal(animal.id)}
+                          >
+                            <TrashIcon className="h-4 w-4 mr-1" /> Delete
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              ) : (
+                <div className="text-center py-8 bg-gray-50 rounded-lg">
+                  <p className="text-gray-500">No emergency animals</p>
+                </div>
+              )}
+            </div>
+            
             {/* All Animals Section */}
             <div>
               <h2 className="text-2xl font-semibold mb-4">All Animals</h2>
@@ -445,7 +568,7 @@ const OwnerPage = () => {
                 </TableHeader>
                 <TableBody>
                   {animals.map((animal) => (
-                    <TableRow key={animal.id}>
+                    <TableRow key={animal.id} className={animal.isEmergency ? "bg-red-50" : ""}>
                       <TableCell>
                         {animal.type === 'dog' ? '🐶 Dog' : '🐱 Cat'} ({animal.count})
                       </TableCell>
@@ -457,6 +580,8 @@ const OwnerPage = () => {
                           <Badge variant="outline" className="border-amber-500 text-amber-500">
                             Pending Verification
                           </Badge>
+                        ) : animal.isEmergency ? (
+                          <Badge variant="destructive">Emergency</Badge>
                         ) : (
                           <Badge variant="outline">Available</Badge>
                         )}

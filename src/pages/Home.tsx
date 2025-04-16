@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
 import AnimalCard from '../components/AnimalCard';
@@ -17,63 +16,71 @@ const HomePage = () => {
   const [adoptionStatus, setAdoptionStatus] = useState('all');
   const [isLoading, setIsLoading] = useState(true);
   
+  const fetchAnimals = async () => {
+    try {
+      setIsLoading(true);
+      const { data: dbAnimals, error } = await supabase
+        .from('animals')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error('Error fetching animals:', error);
+        toast.error('Failed to load animals');
+        return;
+      }
+      
+      const mappedAnimals = (dbAnimals as DbAnimal[]).map(animal => ({
+        id: animal.id,
+        type: animal.type as 'dog' | 'cat',
+        count: animal.count,
+        healthCondition: animal.health_condition,
+        location: {
+          address: animal.address,
+          mapUrl: animal.map_url,
+        },
+        qrCodeUrl: animal.qr_code_url,
+        photo: animal.photo_url || undefined,
+        uploaderName: animal.uploader_name,
+        uploaderEmail: animal.uploader_email,
+        uploaderContact: animal.uploader_contact || undefined,
+        createdAt: new Date(animal.created_at),
+        isEmergency: animal.is_emergency,
+        isAdopted: animal.is_adopted || false,
+        adopterName: animal.adopter_name || undefined,
+        adopterEmail: animal.adopter_email || undefined,
+        adopterContact: animal.adopter_contact || undefined,
+        adoptedAt: animal.adopted_at ? new Date(animal.adopted_at) : undefined,
+      }));
+      
+      const publicAnimals = mappedAnimals.filter(animal => {
+        return !animal.adopterName || (animal.adopterName && animal.isAdopted);
+      });
+      
+      setAnimals(publicAnimals);
+      setFilteredAnimals(publicAnimals);
+    } catch (error) {
+      console.error('Unexpected error fetching animals:', error);
+      toast.error('An unexpected error occurred');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
   useEffect(() => {
-    const fetchAnimals = async () => {
-      try {
-        setIsLoading(true);
-        const { data: dbAnimals, error } = await supabase
-          .from('animals')
-          .select('*')
-          .order('created_at', { ascending: false });
-        
-        if (error) {
-          console.error('Error fetching animals:', error);
-          toast.error('Failed to load animals');
-          return;
-        }
-        
-        const mappedAnimals = (dbAnimals as DbAnimal[]).map(animal => ({
-          id: animal.id,
-          type: animal.type as 'dog' | 'cat',
-          count: animal.count,
-          healthCondition: animal.health_condition,
-          location: {
-            address: animal.address,
-            mapUrl: animal.map_url,
-          },
-          qrCodeUrl: animal.qr_code_url,
-          photo: animal.photo_url || undefined,
-          uploaderName: animal.uploader_name,
-          uploaderEmail: animal.uploader_email,
-          uploaderContact: animal.uploader_contact || undefined,
-          createdAt: new Date(animal.created_at),
-          isEmergency: animal.is_emergency,
-          isAdopted: animal.is_adopted || false,
-          adopterName: animal.adopter_name || undefined,
-          adopterEmail: animal.adopter_email || undefined,
-          adopterContact: animal.adopter_contact || undefined,
-          adoptedAt: animal.adopted_at ? new Date(animal.adopted_at) : undefined,
-        }));
-        
-        // Only show publicly verified adopted animals (those that have isAdopted=true)
-        // Animals with adopterName but isAdopted=false are pending verification
-        const publicAnimals = mappedAnimals.filter(animal => {
-          // Show if the animal is not adopted
-          // or if it's officially adopted (isAdopted=true)
-          return !animal.adopterName || (animal.adopterName && animal.isAdopted);
-        });
-        
-        setAnimals(publicAnimals);
-        setFilteredAnimals(publicAnimals);
-      } catch (error) {
-        console.error('Unexpected error fetching animals:', error);
-        toast.error('An unexpected error occurred');
-      } finally {
-        setIsLoading(false);
+    fetchAnimals();
+    
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchAnimals();
       }
     };
     
-    fetchAnimals();
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
   
   useEffect(() => {
