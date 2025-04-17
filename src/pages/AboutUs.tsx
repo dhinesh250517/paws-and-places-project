@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { Link } from 'react-router-dom';
 import Layout from '../components/Layout';
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { UserIcon, HeartIcon, PawPrintIcon, ShieldIcon, HomeIcon } from 'lucide-react';
@@ -129,18 +130,18 @@ const AboutUsPage = () => {
             Together, we can make a difference for stray animals in our communities. Every report, donation, and adoption helps create a better world for these deserving animals.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <a 
-              href="/home" 
+            <Link 
+              to="/home" 
               className="px-6 py-3 bg-pawsOrange text-white rounded-md font-medium hover:bg-pawsOrange-600 transition-colors"
             >
               Browse Animals
-            </a>
-            <a 
-              href="/add" 
+            </Link>
+            <Link 
+              to="/add" 
               className="px-6 py-3 bg-pawsBlue text-white rounded-md font-medium hover:bg-pawsBlue-600 transition-colors"
             >
               Report a Stray
-            </a>
+            </Link>
           </div>
         </div>
       </div>

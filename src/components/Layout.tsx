@@ -1,7 +1,7 @@
 
 import React from 'react';
 import Navigation from './Navigation';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -28,9 +28,9 @@ const Layout = ({ children }: LayoutProps) => {
               <div>
                 <h3 className="font-bold text-lg mb-2">Quick Links</h3>
                 <ul className="space-y-1 text-sm">
-                  <li><a href="/home" className="hover:underline">Home</a></li>
-                  <li><a href="/add" className="hover:underline">Report Animal</a></li>
-                  <li><a href="/about" className="hover:underline">About Us</a></li>
+                  <li><Link to="/home" className="hover:underline">Home</Link></li>
+                  <li><Link to="/add" className="hover:underline">Report Animal</Link></li>
+                  <li><Link to="/about" className="hover:underline">About Us</Link></li>
                 </ul>
               </div>
               <div>
