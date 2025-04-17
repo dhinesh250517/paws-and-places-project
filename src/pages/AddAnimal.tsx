@@ -219,6 +219,8 @@ const AddAnimalPage = () => {
       }
       
       toast.success("Animal information submitted successfully!");
+      
+      // Fixed: Use navigate instead of directly setting window.location
       navigate('/home');
     } catch (error) {
       console.error('Error submitting animal data:', error);

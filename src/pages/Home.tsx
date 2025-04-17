@@ -57,10 +57,14 @@ const HomePage = () => {
         adoptedAt: animal.adopted_at ? new Date(animal.adopted_at) : undefined,
       }));
       
+      // Only display fully adopted or available animals (not pending)
       const publicAnimals = mappedAnimals.filter(animal => {
+        // Show if it's available (no adopter name)
+        // OR if it's fully approved for adoption (isAdopted is true)
         return !animal.adopterName || (animal.adopterName && animal.isAdopted);
       });
       
+      console.log(`Filtered to ${publicAnimals.length} public animals`);
       setAnimals(publicAnimals);
       setFilteredAnimals(publicAnimals);
     } catch (error) {
@@ -92,6 +96,10 @@ const HomePage = () => {
             // Immediately remove the deleted animal from the UI
             setAnimals(prev => prev.filter(animal => animal.id !== payload.old.id));
             setFilteredAnimals(prev => prev.filter(animal => animal.id !== payload.old.id));
+          } else if (payload.eventType === 'UPDATE') {
+            console.log(`Animal updated with ID: ${payload.new?.id}`);
+            // Fetch fresh data to make sure we have the latest state
+            fetchAnimals();
           } else {
             // For other changes, just refresh the data
             fetchAnimals();
