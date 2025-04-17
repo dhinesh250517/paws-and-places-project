@@ -33,6 +33,7 @@ const AnimalCard: React.FC<AnimalCardProps> = ({ animal }) => {
   const { id, type, count, healthCondition, location, qrCodeUrl, createdAt, uploaderName, uploaderEmail, uploaderContact, isEmergency, isAdopted, adopterName, adopterEmail, adopterContact, adoptedAt } = animal;
   const [isAdoptionDialogOpen, setIsAdoptionDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const isPendingAdoption = adopterName && !isAdopted;
   
   // Use these actual image URLs instead of the placeholder paths
   const animalImages = {
@@ -60,6 +61,8 @@ const AnimalCard: React.FC<AnimalCardProps> = ({ animal }) => {
   const handleAdopt = () => {
     if (isAdopted) {
       toast.success(`This ${type} has already been adopted by ${adopterName}.`);
+    } else if (isPendingAdoption) {
+      toast.info(`This ${type} has a pending adoption request.`);
     } else {
       setIsAdoptionDialogOpen(true);
     }
@@ -73,10 +76,11 @@ const AnimalCard: React.FC<AnimalCardProps> = ({ animal }) => {
     try {
       setIsSubmitting(true);
       
+      // Important change: Set isAdopted to FALSE - this creates a pending request
       const { data, error } = await supabase.functions.invoke("update-adoption-status", {
         body: {
           id: id,
-          isAdopted: true,
+          isAdopted: false, // Changed from true to false - will require owner approval
           adopterName: values.adopterName,
           adopterEmail: values.adopterEmail,
           adopterContact: values.adopterContact,
@@ -85,7 +89,7 @@ const AnimalCard: React.FC<AnimalCardProps> = ({ animal }) => {
       
       if (error) throw error;
       
-      toast.success("Successfully marked as adopted! Thank you for giving this animal a home.");
+      toast.success("Adoption request submitted! Waiting for owner approval.");
       setIsAdoptionDialogOpen(false);
       
       // Refresh the page to update the UI
@@ -94,8 +98,8 @@ const AnimalCard: React.FC<AnimalCardProps> = ({ animal }) => {
       }, 1500);
       
     } catch (error) {
-      console.error("Error marking as adopted:", error);
-      toast.error("Failed to mark as adopted. Please try again.");
+      console.error("Error submitting adoption request:", error);
+      toast.error("Failed to submit adoption request. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -117,6 +121,11 @@ const AnimalCard: React.FC<AnimalCardProps> = ({ animal }) => {
               <Badge variant="outline" className="border-green-500 text-green-600 bg-green-50">
                 <CheckCircleIcon className="h-3 w-3 mr-1" />
                 Adopted
+              </Badge>
+            )}
+            {isPendingAdoption && (
+              <Badge variant="outline" className="border-amber-500 text-amber-700 bg-amber-50">
+                Pending Approval
               </Badge>
             )}
           </div>
@@ -144,6 +153,10 @@ const AnimalCard: React.FC<AnimalCardProps> = ({ animal }) => {
                     <CheckCircleIcon className="inline-block h-4 w-4 mr-1" />
                     Adopted on {formatDate(adoptedAt || createdAt)}
                   </div>
+                ) : isPendingAdoption ? (
+                  <div className="absolute bottom-0 left-0 right-0 bg-amber-500 bg-opacity-80 text-white text-center py-2">
+                    Pending Approval
+                  </div>
                 ) : (
                   <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white text-center py-2">
                     Click to learn how to help
@@ -169,9 +182,9 @@ const AnimalCard: React.FC<AnimalCardProps> = ({ animal }) => {
                 <h4 className="font-medium">Report</h4>
                 <p className="text-sm text-gray-600">Contact local animal welfare organizations if the {type} needs urgent care.</p>
               </div>
-              <Button onClick={handleAdopt} className="w-full mt-2 bg-pawsBlue hover:bg-pawsBlue-600" disabled={isAdopted}>
+              <Button onClick={handleAdopt} className="w-full mt-2 bg-pawsBlue hover:bg-pawsBlue-600" disabled={isAdopted || isPendingAdoption}>
                 <HeartIcon className="h-4 w-4 mr-2" />
-                {isAdopted ? 'Already Adopted' : 'I want to help'}
+                {isAdopted ? 'Already Adopted' : isPendingAdoption ? 'Pending Approval' : 'I want to help'}
               </Button>
             </div>
           </PopoverContent>
@@ -223,6 +236,33 @@ const AnimalCard: React.FC<AnimalCardProps> = ({ animal }) => {
                 <p className="flex items-center mt-1 text-green-600 font-medium">
                   <CalendarIcon className="h-3.5 w-3.5 mr-1.5" />
                   Adopted on {formatDate(adoptedAt || createdAt)}
+                </p>
+              </div>
+            </div>
+          ) : isPendingAdoption ? (
+            <div className="bg-amber-50 p-3 rounded-md border border-amber-100">
+              <div className="text-sm font-medium mb-2 flex items-center text-amber-700">
+                <AlertTriangleIcon className="h-4 w-4 mr-1" />
+                Pending Approval:
+              </div>
+              <div className="text-sm text-gray-600">
+                <p className="flex items-center mb-1">
+                  <UserIcon className="h-3.5 w-3.5 mr-1.5 text-gray-400" />
+                  {adopterName}
+                </p>
+                <p className="flex items-center mb-1">
+                  <MailIcon className="h-3.5 w-3.5 mr-1.5 text-gray-400" />
+                  {adopterEmail}
+                </p>
+                {adopterContact && (
+                  <p className="flex items-center">
+                    <PhoneIcon className="h-3.5 w-3.5 mr-1.5 text-gray-400" />
+                    {adopterContact}
+                  </p>
+                )}
+                <p className="flex items-center mt-1 text-amber-700 font-medium">
+                  <ClockIcon className="h-3.5 w-3.5 mr-1.5" />
+                  Waiting for owner approval
                 </p>
               </div>
             </div>
@@ -291,14 +331,19 @@ const AnimalCard: React.FC<AnimalCardProps> = ({ animal }) => {
         </Dialog>
         
         <Button 
-          className={`w-full ${isAdopted ? 'bg-green-500 hover:bg-green-600' : 'bg-pawsBlue hover:bg-pawsBlue-600'}`}
+          className={`w-full ${isAdopted ? 'bg-green-500 hover:bg-green-600' : isPendingAdoption ? 'bg-amber-500 hover:bg-amber-600' : 'bg-pawsBlue hover:bg-pawsBlue-600'}`}
           onClick={handleAdopt}
-          disabled={isAdopted}
+          disabled={isAdopted || isPendingAdoption}
         >
           {isAdopted ? (
             <>
               <CheckCircleIcon className="h-4 w-4 mr-2" />
               Already Adopted
+            </>
+          ) : isPendingAdoption ? (
+            <>
+              <ClockIcon className="h-4 w-4 mr-2" />
+              Pending Approval
             </>
           ) : (
             <>
@@ -313,7 +358,7 @@ const AnimalCard: React.FC<AnimalCardProps> = ({ animal }) => {
             <DialogHeader>
               <DialogTitle>Adopt this {type}</DialogTitle>
               <DialogDescription>
-                Fill out the form below to mark this {type} as adopted. This will help others know that this animal has found a home.
+                Fill out the form below to request adoption of this {type}. Your request will be reviewed by the owner before approval.
               </DialogDescription>
             </DialogHeader>
             
@@ -366,7 +411,7 @@ const AnimalCard: React.FC<AnimalCardProps> = ({ animal }) => {
                     Cancel
                   </Button>
                   <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting ? "Processing..." : "Confirm Adoption"}
+                    {isSubmitting ? "Processing..." : "Submit Request"}
                   </Button>
                 </DialogFooter>
               </form>
@@ -376,7 +421,9 @@ const AnimalCard: React.FC<AnimalCardProps> = ({ animal }) => {
         
         <div className="text-center text-sm text-gray-600 italic mt-2">
           {isAdopted ? 
-            "This animal has already been adopted." : 
+            "This animal has been adopted." : 
+            isPendingAdoption ? 
+            "This animal has a pending adoption request awaiting approval." :
             "For adoption and accurate location details, please contact the uploader directly."
           }
         </div>

@@ -17,6 +17,8 @@ const HomePage = () => {
   const [adoptionStatus, setAdoptionStatus] = useState('all');
   const [isLoading, setIsLoading] = useState(true);
   
+  console.log('Home page rendered with', animals.length, 'animals');
+  
   const fetchAnimals = async () => {
     try {
       console.log('Fetching animals from database...');
@@ -57,12 +59,11 @@ const HomePage = () => {
         adoptedAt: animal.adopted_at ? new Date(animal.adopted_at) : undefined,
       }));
       
-      const publicAnimals = mappedAnimals.filter(animal => {
-        return !animal.adopterName || (animal.adopterName && animal.isAdopted);
-      });
+      console.log('Mapped animals:', mappedAnimals.length);
       
-      setAnimals(publicAnimals);
-      setFilteredAnimals(publicAnimals);
+      // Always show all animals on the home page, whether adopted or not
+      setAnimals(mappedAnimals);
+      setFilteredAnimals(mappedAnimals);
     } catch (error) {
       console.error('Unexpected error fetching animals:', error);
       toast.error('An unexpected error occurred');
@@ -75,7 +76,7 @@ const HomePage = () => {
     fetchAnimals();
     
     // Listen for real-time updates on the animals table
-    // This will ensure data is updated when animals are deleted
+    // This will ensure data is updated when animals are deleted or modified
     const channel = supabase
       .channel('animal-changes')
       .on(
@@ -98,7 +99,9 @@ const HomePage = () => {
           }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('Realtime subscription status:', status);
+      });
     
     // Refresh data when the page becomes visible
     const handleVisibilityChange = () => {
@@ -112,9 +115,25 @@ const HomePage = () => {
     
     // Clean up subscriptions on unmount
     return () => {
+      console.log('Cleaning up subscriptions');
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       supabase.removeChannel(channel);
     };
+  }, []);
+  
+  // Debug the realtime channel
+  useEffect(() => {
+    const testRealtime = async () => {
+      try {
+        // Check if realtime is enabled for your Supabase project
+        const { data, error } = await supabase.from('animals').select('count').limit(1);
+        console.log('Realtime test query result:', data, error);
+      } catch (err) {
+        console.error('Realtime test error:', err);
+      }
+    };
+    
+    testRealtime();
   }, []);
   
   useEffect(() => {
@@ -125,8 +144,13 @@ const HomePage = () => {
     }
     
     if (adoptionStatus !== 'all') {
-      const isAdopted = adoptionStatus === 'adopted';
-      results = results.filter(animal => animal.isAdopted === isAdopted);
+      if (adoptionStatus === 'adopted') {
+        results = results.filter(animal => animal.isAdopted === true);
+      } else if (adoptionStatus === 'available') {
+        results = results.filter(animal => !animal.isAdopted && !animal.adopterName);
+      } else if (adoptionStatus === 'pending') {
+        results = results.filter(animal => animal.adopterName && !animal.isAdopted);
+      }
     }
     
     if (searchTerm) {
@@ -137,6 +161,7 @@ const HomePage = () => {
       );
     }
     
+    console.log('Filtered to', results.length, 'animals');
     setFilteredAnimals(results);
   }, [searchTerm, animalType, adoptionStatus, animals]);
   
@@ -184,6 +209,7 @@ const HomePage = () => {
               <SelectContent>
                 <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="available">Available</SelectItem>
+                <SelectItem value="pending">Pending Approval</SelectItem>
                 <SelectItem value="adopted">Adopted</SelectItem>
               </SelectContent>
             </Select>

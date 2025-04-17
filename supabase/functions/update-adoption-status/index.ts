@@ -21,6 +21,8 @@ serve(async (req) => {
     
     const { id, isAdopted, adopterName, adopterEmail, adopterContact } = await req.json();
     
+    console.log("Update adoption request:", { id, isAdopted, adopterName, adopterEmail, adopterContact });
+    
     // Update the animal's adoption status
     const { data, error } = await supabaseClient
       .from('animals')
@@ -36,11 +38,20 @@ serve(async (req) => {
     
     if (error) throw error;
     
-    // Return success response
+    // Return success response with appropriate message based on the action
+    let message;
+    if (isAdopted && adopterName) {
+      message = "Animal marked as adopted";
+    } else if (!isAdopted && adopterName) {
+      message = "Adoption request submitted and awaiting approval";
+    } else {
+      message = "Animal marked as not adopted";
+    }
+    
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: isAdopted ? "Animal marked as adopted" : "Animal marked as not adopted",
+        message,
         animal: data?.[0] || null
       }),
       { 
