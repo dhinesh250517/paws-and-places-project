@@ -7,7 +7,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 // Pages
 import Index from "./pages/Index";
-import Home from "./pages/Home";
+import Home from "./pages/home";
 import AddAnimal from "./pages/AddAnimal";
 import AboutUs from "./pages/AboutUs";
 import NotFound from "./pages/NotFound";
