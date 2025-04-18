@@ -1,7 +1,7 @@
 
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LoginForm } from '../components/LoginForm';
+import LoginForm from '../components/LoginForm';
 
 const Index = () => {
   const navigate = useNavigate();
