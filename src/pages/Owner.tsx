@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
@@ -162,12 +161,11 @@ const OwnerPage = () => {
     try {
       const { error } = await supabase.functions.invoke('update-adoption-status', {
         body: { 
-          animalId: currentAnimal.id,
+          id: currentAnimal.id,
           isAdopted: true,
           adopterName: adopterInfo.name,
           adopterEmail: adopterInfo.email,
-          adopterContact: adopterInfo.contact,
-          adoptedAt: new Date().toISOString()
+          adopterContact: adopterInfo.contact
         }
       });
       

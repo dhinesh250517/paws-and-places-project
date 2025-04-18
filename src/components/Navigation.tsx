@@ -15,7 +15,6 @@ const Navigation = () => {
     { path: "/add", label: "Add Animal" },
     { path: "/adopted", label: "Adopted Animals" },
     { path: "/about", label: "About Us" },
-    { path: "/owner", label: "Owner Login" },
   ];
 
   const isActive = (path: string) => location.pathname === path;
