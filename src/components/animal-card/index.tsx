@@ -1,11 +1,10 @@
 
 import React, { useState } from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { toast } from "sonner";
 import { MapPinIcon } from 'lucide-react';
 import { Animal } from '../../types';
+import { Button } from "@/components/ui/button";
 import AnimalStatusBadges from './AnimalStatusBadges';
 import ContactInfo from './ContactInfo';
 import AnimalImage from './AnimalImage';
@@ -19,7 +18,12 @@ interface AnimalCardProps {
 }
 
 const AnimalCard: React.FC<AnimalCardProps> = ({ animal }) => {
-  const { id, type, count, healthCondition, location, qrCodeUrl, createdAt, uploaderName, uploaderEmail, uploaderContact, isEmergency, isAdopted, adopterName, adopterEmail, adopterContact, adoptedAt } = animal;
+  const { 
+    id, type, count, healthCondition, location, qrCodeUrl, createdAt, 
+    uploaderName, uploaderEmail, uploaderContact, isEmergency, isAdopted, 
+    adopterName, adopterEmail, adopterContact, adoptedAt 
+  } = animal;
+  
   const [isAdoptionDialogOpen, setIsAdoptionDialogOpen] = useState(false);
   const isPendingAdoption = adopterName && !isAdopted;
   
@@ -29,16 +33,6 @@ const AnimalCard: React.FC<AnimalCardProps> = ({ animal }) => {
       month: 'short',
       day: 'numeric',
     });
-  };
-  
-  const handleAdopt = () => {
-    if (isAdopted) {
-      toast.success(`This ${type} has already been adopted by ${adopterName}.`);
-    } else if (isPendingAdoption) {
-      toast.info(`This ${type} has a pending adoption request.`);
-    } else {
-      setIsAdoptionDialogOpen(true);
-    }
   };
 
   const handleViewMap = () => {
@@ -61,13 +55,14 @@ const AnimalCard: React.FC<AnimalCardProps> = ({ animal }) => {
           {count > 1 ? `Group of ${count} stray ${type}s` : `Stray ${type}`}
         </CardTitle>
       </CardHeader>
+      
       <CardContent className="pb-2 flex-grow">
         <HelpPopover 
           type={type} 
           isAdopted={!!isAdopted} 
           isPendingAdoption={!!isPendingAdoption}
           adoptedAt={adoptedAt}
-          handleAdopt={handleAdopt}
+          handleAdopt={() => setIsAdoptionDialogOpen(true)}
           formatDate={formatDate}
         >
           <AnimalImage 
@@ -115,6 +110,7 @@ const AnimalCard: React.FC<AnimalCardProps> = ({ animal }) => {
           />
         </div>
       </CardContent>
+
       <CardFooter className="flex flex-col space-y-3 pt-0">
         <DonateDialog 
           qrCodeUrl={qrCodeUrl}
@@ -126,7 +122,7 @@ const AnimalCard: React.FC<AnimalCardProps> = ({ animal }) => {
         <AdoptButton 
           isAdopted={!!isAdopted}
           isPendingAdoption={!!isPendingAdoption}
-          onClick={handleAdopt}
+          onClick={() => setIsAdoptionDialogOpen(true)}
         />
         
         <Dialog open={isAdoptionDialogOpen} onOpenChange={setIsAdoptionDialogOpen}>
