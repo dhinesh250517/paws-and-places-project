@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
-import { MenuIcon, XIcon, HeartHandshakeIcon, LogOutIcon } from "lucide-react";
+import { MenuIcon, XIcon, HeartHandshakeIcon, LogOutIcon, TrashIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -12,8 +12,12 @@ const Navigation = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
+  const isOwner = location.pathname === '/owner' || location.pathname === '/deleted';
 
-  const navItems = [
+  const navItems = isOwner ? [
+    { path: "/owner", label: "Dashboard" },
+    { path: "/deleted", label: "Deleted Animals" },
+  ] : [
     { path: "/home", label: "Home" },
     { path: "/add", label: "Add Animal" },
     { path: "/adopted", label: "Adopted Animals" },
@@ -45,7 +49,7 @@ const Navigation = () => {
   return (
     <nav className="bg-white shadow-sm">
       <div className="paws-container flex justify-between items-center py-3">
-        <Link to="/" className="font-bold text-lg flex items-center">
+        <Link to={isOwner ? "/owner" : "/"} className="font-bold text-lg flex items-center">
           <svg
             width="24"
             height="24"
@@ -91,6 +95,9 @@ const Navigation = () => {
               >
                 {item.label === "Adopted Animals" && (
                   <HeartHandshakeIcon className="h-4 w-4 mr-1 text-green-500" />
+                )}
+                {item.label === "Deleted Animals" && (
+                  <TrashIcon className="h-4 w-4 mr-1 text-red-500" />
                 )}
                 {item.label}
               </Button>
