@@ -1,13 +1,16 @@
 
 import React, { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
-import { MenuIcon, XIcon, HeartHandshakeIcon } from "lucide-react";
+import { MenuIcon, XIcon, HeartHandshakeIcon, LogOutIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const Navigation = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
 
   const navItems = [
@@ -18,6 +21,26 @@ const Navigation = () => {
   ];
 
   const isActive = (path: string) => location.pathname === path;
+
+  const handleLogout = async () => {
+    try {
+      // Check if we're on the owner page
+      if (location.pathname === '/owner') {
+        localStorage.removeItem('ownerLoggedIn');
+        toast.success('Owner logged out');
+        navigate('/');
+        return;
+      }
+      
+      // Regular user logout using Supabase
+      await supabase.auth.signOut();
+      toast.success('Logged out successfully');
+      navigate('/');
+    } catch (error) {
+      console.error('Error logging out:', error);
+      toast.error('Failed to log out');
+    }
+  };
 
   return (
     <nav className="bg-white shadow-sm">
@@ -73,6 +96,14 @@ const Navigation = () => {
               </Button>
             </Link>
           ))}
+          <Button 
+            variant="ghost" 
+            onClick={handleLogout}
+            className="px-3 flex items-center"
+          >
+            <LogOutIcon className="h-4 w-4 mr-1" />
+            Logout
+          </Button>
         </div>
 
         {/* Mobile Navigation */}
@@ -104,6 +135,14 @@ const Navigation = () => {
                   </Button>
                 </Link>
               ))}
+              <Button 
+                variant="ghost" 
+                onClick={handleLogout}
+                className="w-full justify-start"
+              >
+                <LogOutIcon className="h-4 w-4 mr-2" />
+                Logout
+              </Button>
             </div>
           </SheetContent>
         </Sheet>
