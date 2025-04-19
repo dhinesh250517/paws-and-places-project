@@ -18,6 +18,7 @@ export type Database = {
           adopter_name: string | null
           count: number
           created_at: string
+          deleted: boolean | null
           health_condition: string
           id: string
           is_adopted: boolean | null
@@ -38,6 +39,7 @@ export type Database = {
           adopter_name?: string | null
           count: number
           created_at?: string
+          deleted?: boolean | null
           health_condition: string
           id?: string
           is_adopted?: boolean | null
@@ -58,6 +60,61 @@ export type Database = {
           adopter_name?: string | null
           count?: number
           created_at?: string
+          deleted?: boolean | null
+          health_condition?: string
+          id?: string
+          is_adopted?: boolean | null
+          is_emergency?: boolean
+          map_url?: string
+          photo_url?: string | null
+          qr_code_url?: string
+          type?: string
+          uploader_contact?: string | null
+          uploader_email?: string
+          uploader_name?: string
+        }
+        Relationships: []
+      }
+      deleted_animals: {
+        Row: {
+          address: string
+          count: number
+          created_at: string
+          deleted_at: string
+          health_condition: string
+          id: string
+          is_adopted: boolean | null
+          is_emergency: boolean
+          map_url: string
+          photo_url: string | null
+          qr_code_url: string
+          type: string
+          uploader_contact: string | null
+          uploader_email: string
+          uploader_name: string
+        }
+        Insert: {
+          address: string
+          count: number
+          created_at?: string
+          deleted_at?: string
+          health_condition: string
+          id?: string
+          is_adopted?: boolean | null
+          is_emergency?: boolean
+          map_url: string
+          photo_url?: string | null
+          qr_code_url: string
+          type: string
+          uploader_contact?: string | null
+          uploader_email: string
+          uploader_name: string
+        }
+        Update: {
+          address?: string
+          count?: number
+          created_at?: string
+          deleted_at?: string
           health_condition?: string
           id?: string
           is_adopted?: boolean | null

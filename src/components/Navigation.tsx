@@ -1,8 +1,7 @@
-
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
-import { MenuIcon, XIcon, DogIcon, HomeIcon, PlusIcon, InfoIcon, LogOutIcon } from 'lucide-react';
+import { MenuIcon, XIcon, DogIcon, HomeIcon, PlusIcon, InfoIcon, LogOutIcon, HeartIcon } from 'lucide-react';
 
 const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -28,6 +27,11 @@ const Navigation = () => {
       name: 'Add Animal',
       path: '/add',
       icon: <PlusIcon className="w-5 h-5 mr-2" />,
+    },
+    {
+      name: 'Adopted',
+      path: '/adopted',
+      icon: <HeartIcon className="w-5 h-5 mr-2" />,
     },
     {
       name: 'About Us',

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
 import AnimalCard from '../components/AnimalCard';
@@ -26,6 +25,7 @@ const HomePage = () => {
       const { data: dbAnimals, error } = await supabase
         .from('animals')
         .select('*')
+        .eq('deleted', false)
         .order('created_at', { ascending: false });
       
       if (error) {
