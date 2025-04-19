@@ -16,7 +16,6 @@ export const useAnimalData = () => {
       const { data: dbAnimals, error } = await supabase
         .from('animals')
         .select('*')
-        .eq('is_adopted', false) // Only fetch animals that are not adopted
         .order('created_at', { ascending: false });
       
       if (error) {
@@ -81,18 +80,8 @@ export const useAnimalData = () => {
             // Immediately remove the deleted animal from the UI
             setAnimals(prev => prev.filter(animal => animal.id !== payload.old.id));
             setFilteredAnimals(prev => prev.filter(animal => animal.id !== payload.old.id));
-          } else if (payload.eventType === 'UPDATE') {
-            const updatedAnimal = payload.new;
-            if (updatedAnimal.is_adopted) {
-              // If an animal is marked as adopted, remove it from the list
-              setAnimals(prev => prev.filter(animal => animal.id !== updatedAnimal.id));
-              setFilteredAnimals(prev => prev.filter(animal => animal.id !== updatedAnimal.id));
-            } else {
-              // For other changes, just refresh the data
-              fetchAnimals();
-            }
           } else {
-            // For other changes like INSERT, just refresh the data
+            // For other changes, just refresh the data
             fetchAnimals();
           }
         }
@@ -117,6 +106,21 @@ export const useAnimalData = () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       supabase.removeChannel(channel);
     };
+  }, []);
+  
+  // Debug the realtime channel
+  useEffect(() => {
+    const testRealtime = async () => {
+      try {
+        // Check if realtime is enabled for your Supabase project
+        const { data, error } = await supabase.from('animals').select('count').limit(1);
+        console.log('Realtime test query result:', data, error);
+      } catch (err) {
+        console.error('Realtime test error:', err);
+      }
+    };
+    
+    testRealtime();
   }, []);
 
   return {

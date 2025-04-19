@@ -3,190 +3,225 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { DogIcon, CatIcon, HeartIcon, HomeIcon, HandIcon } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { DogIcon, CatIcon } from 'lucide-react';
 
 const LoginForm = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState('login');
   
-  const [formData, setFormData] = useState({
+  // Login form state
+  const [loginData, setLoginData] = useState({
     email: '',
     password: '',
   });
-
-  const handleLogin = async (e: React.FormEvent) => {
+  
+  // Register form state
+  const [registerData, setRegisterData] = useState({
+    username: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+  });
+  
+  const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     
-    if (formData.email === 'owner@gmail.com' && formData.password === '12345') {
-      localStorage.setItem('ownerLoggedIn', 'true');
-      toast.success("Owner login successful!");
-      navigate('/owner');
-      setLoading(false);
+    // Check if this is the owner/admin login
+    if (loginData.email === 'owner@gmail.com' && loginData.password === '12345') {
+      // Handle owner login
+      setTimeout(() => {
+        setLoading(false);
+        toast.success("Owner login successful!");
+        navigate('/owner');
+      }, 1000);
       return;
     }
-
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email: formData.email,
-        password: formData.password,
-      });
-
-      if (error) {
-        toast.error(error.message);
-        return;
-      }
-
+    
+    // Regular user login
+    setTimeout(() => {
+      setLoading(false);
+      
+      // In a real app, we would verify credentials with the backend
+      // For now, we'll just allow any login
       toast.success("Login successful!");
       navigate('/home');
-    } catch (error) {
-      console.error('Error during login:', error);
-      toast.error('An unexpected error occurred');
-    } finally {
-      setLoading(false);
-    }
+    }, 1000);
   };
-
-  const handleRegister = async (e: React.FormEvent) => {
+  
+  const handleRegisterSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
-    try {
-      const { error } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-      });
-
-      if (error) {
-        toast.error(error.message);
-        return;
-      }
-
-      toast.success("Registration successful! Please check your email to verify your account.");
-      setActiveTab('login');
-    } catch (error) {
-      console.error('Error during registration:', error);
-      toast.error('An unexpected error occurred');
-    } finally {
+    
+    // Check if passwords match
+    if (registerData.password !== registerData.confirmPassword) {
       setLoading(false);
+      toast.error("Passwords do not match!");
+      return;
     }
+    
+    // Simulate register API call
+    setTimeout(() => {
+      setLoading(false);
+      toast.success("Registration successful! Please log in.");
+      // Switch to login tab
+      document.getElementById('login-tab')?.click();
+    }, 1000);
   };
-
+  
+  const handleLoginChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setLoginData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+  
+  const handleRegisterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setRegisterData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+  
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
-      <div className="w-full max-w-5xl grid md:grid-cols-2 gap-8 items-center">
-        {/* Left side - App details */}
-        <div className="space-y-6 text-left p-6">
-          <div className="flex items-center gap-2 mb-8">
-            <DogIcon className="h-10 w-10 text-pawsOrange" />
-            <CatIcon className="h-10 w-10 text-pawsBlue" />
-          </div>
-          <h1 className="text-4xl font-bold text-gray-900">Welcome to Paws & Places</h1>
-          <div className="space-y-4">
-            <div className="flex items-start gap-3">
-              <HeartIcon className="h-6 w-6 text-pawsOrange mt-1" />
-              <div>
-                <h3 className="font-semibold text-lg">Help Stray Animals</h3>
-                <p className="text-gray-600">Report and locate stray animals in need of care and attention.</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <HomeIcon className="h-6 w-6 text-pawsBlue mt-1" />
-              <div>
-                <h3 className="font-semibold text-lg">Find Forever Homes</h3>
-                <p className="text-gray-600">Connect rescued animals with loving families looking to adopt.</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <HandIcon className="h-6 w-6 text-pawsOrange mt-1" />
-              <div>
-                <h3 className="font-semibold text-lg">Make a Difference</h3>
-                <p className="text-gray-600">Join our community of animal lovers working together to make a positive impact.</p>
-              </div>
-            </div>
-          </div>
+    <Card className="w-full max-w-md mx-auto">
+      <CardHeader className="space-y-1">
+        <div className="flex items-center justify-center space-x-2 mb-2">
+          <DogIcon className="h-8 w-8 text-pawsOrange" />
+          <CatIcon className="h-8 w-8 text-pawsBlue" />
         </div>
-
-        {/* Right side - Login/Register form */}
-        <Card className="w-full max-w-md">
-          <CardHeader className="space-y-2">
-            <CardTitle className="text-2xl text-center">
-              {activeTab === 'login' ? 'Sign In' : 'Create Account'}
-            </CardTitle>
-            <CardDescription className="text-center">
-              {activeTab === 'login' 
-                ? "Welcome back! Please sign in to continue."
-                : "Join us in helping stray animals find care and homes."}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-4">
-                <TabsTrigger value="login">Login</TabsTrigger>
-                <TabsTrigger value="register">Register</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="login">
-                <form onSubmit={handleLogin} className="space-y-4">
-                  <Input
-                    type="email"
-                    placeholder="Email"
-                    value={formData.email}
-                    onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                    required
-                  />
-                  <Input
-                    type="password"
-                    placeholder="Password"
-                    value={formData.password}
-                    onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                    required
-                  />
-                  <Button 
-                    type="submit" 
-                    className="w-full bg-pawsOrange hover:bg-pawsOrange/90"
-                    disabled={loading}
+        <CardTitle className="text-2xl text-center">Paws & Places</CardTitle>
+        <CardDescription className="text-center">
+          Help stray animals find care and homes.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Tabs defaultValue="login">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger id="login-tab" value="login">Login</TabsTrigger>
+            <TabsTrigger value="register">Register</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="login">
+            <form onSubmit={handleLoginSubmit} className="space-y-4 mt-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input 
+                  id="email" 
+                  name="email"
+                  type="email" 
+                  placeholder="your@email.com" 
+                  required
+                  value={loginData.email}
+                  onChange={handleLoginChange}
+                />
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password">Password</Label>
+                  <a 
+                    href="#" 
+                    className="text-xs text-pawsBlue hover:underline"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      toast.info("Password reset functionality would be implemented in the full version");
+                    }}
                   >
-                    {loading ? 'Signing in...' : 'Sign in'}
-                  </Button>
-                </form>
-              </TabsContent>
-
-              <TabsContent value="register">
-                <form onSubmit={handleRegister} className="space-y-4">
-                  <Input
-                    type="email"
-                    placeholder="Email"
-                    value={formData.email}
-                    onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                    required
-                  />
-                  <Input
-                    type="password"
-                    placeholder="Password"
-                    value={formData.password}
-                    onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                    required
-                  />
-                  <Button 
-                    type="submit" 
-                    className="w-full bg-pawsBlue hover:bg-pawsBlue/90"
-                    disabled={loading}
-                  >
-                    {loading ? 'Creating account...' : 'Create account'}
-                  </Button>
-                </form>
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+                    Forgot password?
+                  </a>
+                </div>
+                <Input 
+                  id="password" 
+                  name="password"
+                  type="password" 
+                  placeholder="••••••••" 
+                  required
+                  value={loginData.password}
+                  onChange={handleLoginChange}
+                />
+              </div>
+              <Button 
+                type="submit" 
+                className="w-full bg-pawsOrange hover:bg-pawsOrange-600"
+                disabled={loading}
+              >
+                {loading ? 'Logging in...' : 'Sign in'}
+              </Button>
+            </form>
+          </TabsContent>
+          
+          <TabsContent value="register">
+            <form onSubmit={handleRegisterSubmit} className="space-y-4 mt-4">
+              <div className="space-y-2">
+                <Label htmlFor="username">Username</Label>
+                <Input 
+                  id="username" 
+                  name="username"
+                  placeholder="johndoe" 
+                  required
+                  value={registerData.username}
+                  onChange={handleRegisterChange}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="register-email">Email</Label>
+                <Input 
+                  id="register-email" 
+                  name="email"
+                  type="email" 
+                  placeholder="your@email.com" 
+                  required
+                  value={registerData.email}
+                  onChange={handleRegisterChange}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="register-password">Password</Label>
+                <Input 
+                  id="register-password" 
+                  name="password"
+                  type="password" 
+                  placeholder="••••••••" 
+                  required
+                  value={registerData.password}
+                  onChange={handleRegisterChange}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="confirm-password">Confirm Password</Label>
+                <Input 
+                  id="confirm-password" 
+                  name="confirmPassword"
+                  type="password" 
+                  placeholder="••••••••" 
+                  required
+                  value={registerData.confirmPassword}
+                  onChange={handleRegisterChange}
+                />
+              </div>
+              <Button 
+                type="submit" 
+                className="w-full bg-pawsOrange hover:bg-pawsOrange-600"
+                disabled={loading}
+              >
+                {loading ? 'Creating account...' : 'Create account'}
+              </Button>
+            </form>
+          </TabsContent>
+        </Tabs>
+      </CardContent>
+      <CardFooter className="flex flex-col space-y-4">
+        <div className="text-xs text-center text-gray-500">
+          By continuing, you agree to our Terms of Service and Privacy Policy.
+        </div>
+      </CardFooter>
+    </Card>
   );
 };
 

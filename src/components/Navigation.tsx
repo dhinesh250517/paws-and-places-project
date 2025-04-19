@@ -1,160 +1,119 @@
 
-import React, { useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Button } from "./ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
-import { MenuIcon, XIcon, HeartHandshakeIcon, LogOutIcon, TrashIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import React, { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { Button } from "@/components/ui/button";
+import { MenuIcon, XIcon, DogIcon, HomeIcon, PlusIcon, InfoIcon, LogOutIcon } from 'lucide-react';
 
 const Navigation = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
-  const navigate = useNavigate();
-  const [isOpen, setIsOpen] = useState(false);
-  const isOwner = location.pathname === '/owner' || location.pathname === '/deleted';
 
-  const navItems = isOwner ? [
-    { path: "/owner", label: "Dashboard" },
-    { path: "/deleted", label: "Deleted Animals" },
-  ] : [
-    { path: "/home", label: "Home" },
-    { path: "/add", label: "Add Animal" },
-    { path: "/adopted", label: "Adopted Animals" },
-    { path: "/about", label: "About Us" },
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  const handleLogout = () => {
+    // For now, we'll just redirect to the login page
+    // In the future, we would add actual logout logic here
+    window.location.href = '/';
+  };
+
+  const navLinks = [
+    {
+      name: 'Home',
+      path: '/home',
+      icon: <HomeIcon className="w-5 h-5 mr-2" />,
+    },
+    {
+      name: 'Add Animal',
+      path: '/add',
+      icon: <PlusIcon className="w-5 h-5 mr-2" />,
+    },
+    {
+      name: 'About Us',
+      path: '/about',
+      icon: <InfoIcon className="w-5 h-5 mr-2" />,
+    },
   ];
 
-  const isActive = (path: string) => location.pathname === path;
-
-  const handleLogout = async () => {
-    try {
-      // Check if we're on the owner page
-      if (location.pathname === '/owner') {
-        localStorage.removeItem('ownerLoggedIn');
-        toast.success('Owner logged out');
-        navigate('/');
-        return;
-      }
-      
-      // Regular user logout using Supabase
-      await supabase.auth.signOut();
-      toast.success('Logged out successfully');
-      navigate('/');
-    } catch (error) {
-      console.error('Error logging out:', error);
-      toast.error('Failed to log out');
-    }
+  const isActive = (path: string) => {
+    return location.pathname === path;
   };
 
   return (
-    <nav className="bg-white shadow-sm">
-      <div className="paws-container flex justify-between items-center py-3">
-        <Link to={isOwner ? "/owner" : "/"} className="font-bold text-lg flex items-center">
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className="text-pawsBlue mr-2"
-          >
-            <path
-              d="M10.5 18H13.5C15.1569 18 16.5 16.6569 16.5 15C16.5 13.3431 15.1569 12 13.5 12H10.5C8.84315 12 7.5 13.3431 7.5 15C7.5 16.6569 8.84315 18 10.5 18Z"
-              fill="currentColor"
-            />
-            <path
-              d="M7 9C8.10457 9 9 8.10457 9 7C9 5.89543 8.10457 5 7 5C5.89543 5 5 5.89543 5 7C5 8.10457 5.89543 9 7 9Z"
-              fill="currentColor"
-            />
-            <path
-              d="M17 9C18.1046 9 19 8.10457 19 7C19 5.89543 18.1046 5 17 5C15.8954 5 15 5.89543 15 7C15 8.10457 15.8954 9 17 9Z"
-              fill="currentColor"
-            />
-            <path
-              d="M19 17C20.1046 17 21 16.1046 21 15C21 13.8954 20.1046 13 19 13C17.8954 13 17 13.8954 17 15C17 16.1046 17.8954 17 19 17Z"
-              fill="currentColor"
-            />
-            <path
-              d="M5 17C6.10457 17 7 16.1046 7 15C7 13.8954 6.10457 13 5 13C3.89543 13 3 13.8954 3 15C3 16.1046 3.89543 17 5 17Z"
-              fill="currentColor"
-            />
-          </svg>
-          Paws & Places
-        </Link>
-
-        {/* Desktop Navigation */}
-        <div className="hidden md:flex space-x-1">
-          {navItems.map((item) => (
-            <Link key={item.path} to={item.path}>
-              <Button
-                variant={isActive(item.path) ? "default" : "ghost"}
-                className={cn(
-                  "px-3",
-                  isActive(item.path) ? "bg-pawsBlue text-white" : ""
-                )}
+    <header className="bg-white shadow-sm sticky top-0 z-10">
+      <div className="paws-container py-3">
+        <div className="flex items-center justify-between">
+          <Link to="/home" className="flex items-center">
+            <DogIcon className="h-8 w-8 text-pawsOrange animate-paw-wave" />
+            <span className="ml-2 text-xl font-bold text-pawsOrange-900">Paws & Places</span>
+          </Link>
+          
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center space-x-1">
+            {navLinks.map((link) => (
+              <Button 
+                key={link.path}
+                variant={isActive(link.path) ? "default" : "ghost"}
+                className={`flex items-center ${isActive(link.path) ? 'bg-pawsOrange text-white' : 'text-gray-700 hover:text-pawsOrange'}`}
+                asChild
               >
-                {item.label === "Adopted Animals" && (
-                  <HeartHandshakeIcon className="h-4 w-4 mr-1 text-green-500" />
-                )}
-                {item.label === "Deleted Animals" && (
-                  <TrashIcon className="h-4 w-4 mr-1 text-red-500" />
-                )}
-                {item.label}
+                <Link to={link.path}>
+                  {link.icon}
+                  {link.name}
+                </Link>
               </Button>
-            </Link>
-          ))}
+            ))}
+            <Button 
+              variant="outline" 
+              className="ml-2 flex items-center text-gray-700 hover:text-pawsOrange-600"
+              onClick={handleLogout}
+            >
+              <LogOutIcon className="w-5 h-5 mr-2" />
+              Logout
+            </Button>
+          </nav>
+          
+          {/* Mobile menu button */}
           <Button 
             variant="ghost" 
-            onClick={handleLogout}
-            className="px-3 flex items-center"
+            size="sm" 
+            className="md:hidden"
+            onClick={toggleMenu}
           >
-            <LogOutIcon className="h-4 w-4 mr-1" />
-            Logout
+            {isMenuOpen ? <XIcon className="h-6 w-6" /> : <MenuIcon className="h-6 w-6" />}
           </Button>
         </div>
-
+        
         {/* Mobile Navigation */}
-        <Sheet open={isOpen} onOpenChange={setIsOpen}>
-          <SheetTrigger asChild className="md:hidden">
-            <Button variant="ghost" size="icon">
-              {isOpen ? <XIcon /> : <MenuIcon />}
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="right">
-            <div className="flex flex-col space-y-3 mt-6">
-              {navItems.map((item) => (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  onClick={() => setIsOpen(false)}
-                >
-                  <Button
-                    variant={isActive(item.path) ? "default" : "ghost"}
-                    className={cn(
-                      "w-full justify-start",
-                      isActive(item.path) ? "bg-pawsBlue text-white" : ""
-                    )}
-                  >
-                    {item.label === "Adopted Animals" && (
-                      <HeartHandshakeIcon className="h-4 w-4 mr-2 text-green-500" />
-                    )}
-                    {item.label}
-                  </Button>
-                </Link>
-              ))}
+        {isMenuOpen && (
+          <nav className="md:hidden pt-4 pb-3 space-y-1">
+            {navLinks.map((link) => (
               <Button 
-                variant="ghost" 
-                onClick={handleLogout}
-                className="w-full justify-start"
+                key={link.path}
+                variant={isActive(link.path) ? "default" : "ghost"}
+                className={`w-full justify-start ${isActive(link.path) ? 'bg-pawsOrange text-white' : 'text-gray-700'}`}
+                asChild
+                onClick={() => setIsMenuOpen(false)}
               >
-                <LogOutIcon className="h-4 w-4 mr-2" />
-                Logout
+                <Link to={link.path}>
+                  {link.icon}
+                  {link.name}
+                </Link>
               </Button>
-            </div>
-          </SheetContent>
-        </Sheet>
+            ))}
+            <Button 
+              variant="outline" 
+              className="w-full justify-start text-gray-700"
+              onClick={handleLogout}
+            >
+              <LogOutIcon className="w-5 h-5 mr-2" />
+              Logout
+            </Button>
+          </nav>
+        )}
       </div>
-    </nav>
+    </header>
   );
 };
 
