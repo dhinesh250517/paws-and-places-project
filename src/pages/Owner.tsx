@@ -216,25 +216,59 @@ const OwnerPage = () => {
   const confirmDeleteAnimal = async () => {
     if (!animalToDelete) return;
     try {
-      // Permanently delete the animal from the database
-      const { error } = await supabase
+      const { data: animalData, error: fetchError } = await supabase
+        .from('animals')
+        .select('*')
+        .eq('id', animalToDelete)
+        .single();
+      
+      if (fetchError) {
+        console.error('Error fetching animal:', fetchError);
+        toast.error('Failed to delete animal: ' + fetchError.message);
+        return;
+      }
+
+      const { error: insertError } = await supabase
+        .from('deleted_animals')
+        .insert([{
+          id: animalData.id,
+          type: animalData.type,
+          count: animalData.count,
+          health_condition: animalData.health_condition,
+          address: animalData.address,
+          map_url: animalData.map_url,
+          photo_url: animalData.photo_url,
+          qr_code_url: animalData.qr_code_url,
+          uploader_name: animalData.uploader_name,
+          uploader_email: animalData.uploader_email,
+          uploader_contact: animalData.uploader_contact,
+          created_at: animalData.created_at,
+          is_emergency: animalData.is_emergency,
+          is_adopted: animalData.is_adopted
+        }]);
+      
+      if (insertError) {
+        console.error('Error inserting into deleted_animals:', insertError);
+        toast.error('Failed to archive deleted animal');
+        return;
+      }
+
+      const { error: deleteError } = await supabase
         .from('animals')
         .delete()
         .eq('id', animalToDelete);
       
-      if (error) {
-        console.error('Error deleting animal:', error);
-        toast.error('Failed to delete animal: ' + error.message);
+      if (deleteError) {
+        console.error('Error deleting animal:', deleteError);
+        toast.error('Failed to delete animal: ' + deleteError.message);
         return;
       }
       
       toast.success('Animal deleted successfully!');
       
-      // Close the dialog and reset the state
       setDeleteDialogOpen(false);
       setAnimalToDelete(null);
       
-      // Update local state to reflect the deletion
       setAnimals(prev => prev.filter(a => a.id !== animalToDelete));
       setPendingAdoptions(prev => prev.filter(a => a.id !== animalToDelete));
       setOldEntries(prev => prev.filter(a => a.id !== animalToDelete));

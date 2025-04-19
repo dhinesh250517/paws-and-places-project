@@ -5,12 +5,22 @@ import Layout from '../components/Layout';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Animal, DbAnimal } from '../types';
 import { supabase } from '../integrations/supabase/client';
+
+interface DeletedAnimal {
+  id: string;
+  type: 'dog' | 'cat';
+  count: number;
+  address: string;
+  uploaderName: string;
+  uploaderEmail: string;
+  createdAt: Date;
+  deletedAt: Date;
+}
 
 const DeletedAnimals = () => {
   const navigate = useNavigate();
-  const [deletedAnimals, setDeletedAnimals] = useState<Animal[]>([]);
+  const [deletedAnimals, setDeletedAnimals] = useState<DeletedAnimal[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -25,7 +35,7 @@ const DeletedAnimals = () => {
 
   const fetchDeletedAnimals = async () => {
     try {
-      const { data: deletedDbAnimals, error } = await supabase
+      const { data, error } = await supabase
         .from('deleted_animals')
         .select('*')
         .order('deleted_at', { ascending: false });
@@ -36,23 +46,15 @@ const DeletedAnimals = () => {
         return;
       }
 
-      const mappedAnimals = (deletedDbAnimals as DbAnimal[]).map(animal => ({
+      const mappedAnimals = (data || []).map(animal => ({
         id: animal.id,
         type: animal.type as 'dog' | 'cat',
         count: animal.count,
-        healthCondition: animal.health_condition,
-        location: {
-          address: animal.address,
-          mapUrl: animal.map_url,
-        },
-        qrCodeUrl: animal.qr_code_url,
-        photo: animal.photo_url || undefined,
+        address: animal.address,
         uploaderName: animal.uploader_name,
         uploaderEmail: animal.uploader_email,
-        uploaderContact: animal.uploader_contact || undefined,
         createdAt: new Date(animal.created_at),
-        isEmergency: animal.is_emergency,
-        isAdopted: animal.is_adopted || false,
+        deletedAt: new Date(animal.deleted_at)
       }));
 
       setDeletedAnimals(mappedAnimals);
@@ -77,6 +79,7 @@ const DeletedAnimals = () => {
                 <TableHead>Type</TableHead>
                 <TableHead>Location</TableHead>
                 <TableHead>Uploader</TableHead>
+                <TableHead>Created Date</TableHead>
                 <TableHead>Deleted Date</TableHead>
               </TableRow>
             </TableHeader>
@@ -87,17 +90,23 @@ const DeletedAnimals = () => {
                     <TableCell>
                       {animal.type === 'dog' ? '🐶 Dog' : '🐱 Cat'} ({animal.count})
                     </TableCell>
-                    <TableCell>{animal.location.address}</TableCell>
+                    <TableCell>{animal.address}</TableCell>
                     <TableCell>
                       {animal.uploaderName}<br/>
                       <span className="text-sm text-gray-500">{animal.uploaderEmail}</span>
                     </TableCell>
                     <TableCell>{animal.createdAt.toLocaleDateString()}</TableCell>
+                    <TableCell>
+                      {animal.deletedAt.toLocaleDateString()}<br/>
+                      <Badge variant="outline" className="mt-1">
+                        {Math.floor((new Date().getTime() - animal.deletedAt.getTime()) / (1000 * 60 * 60 * 24))} days ago
+                      </Badge>
+                    </TableCell>
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center py-8">
+                  <TableCell colSpan={5} className="text-center py-8">
                     No deleted animals found
                   </TableCell>
                 </TableRow>
