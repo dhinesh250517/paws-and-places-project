@@ -20,14 +20,26 @@ const AdoptedAnimalsPage = () => {
       if (error) throw error;
       
       return data.map(animal => ({
-        ...animal,
-        createdAt: new Date(animal.created_at),
-        adoptedAt: animal.adopted_at ? new Date(animal.adopted_at) : undefined,
+        id: animal.id,
+        type: animal.type as 'dog' | 'cat',
+        count: animal.count,
+        healthCondition: animal.health_condition,
         location: {
           address: animal.address,
           mapUrl: animal.map_url,
         },
-        photo: animal.photo_url,
+        qrCodeUrl: animal.qr_code_url,
+        photo: animal.photo_url || undefined,
+        uploaderName: animal.uploader_name,
+        uploaderEmail: animal.uploader_email,
+        uploaderContact: animal.uploader_contact || undefined,
+        createdAt: new Date(animal.created_at),
+        isEmergency: animal.is_emergency,
+        isAdopted: animal.is_adopted || false,
+        adopterName: animal.adopter_name || undefined,
+        adopterEmail: animal.adopter_email || undefined,
+        adopterContact: animal.adopter_contact || undefined,
+        adoptedAt: animal.adopted_at ? new Date(animal.adopted_at) : undefined,
       })) as Animal[];
     }
   });

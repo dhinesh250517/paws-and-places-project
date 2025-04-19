@@ -8,7 +8,8 @@ export const useAnimalFilters = (animals: Animal[], setFilteredAnimals: React.Di
   const [adoptionStatus, setAdoptionStatus] = useState('available');
 
   useEffect(() => {
-    let results = animals.filter(animal => !animal.isAdopted); // Filter out adopted animals
+    // Start with all animals that are not adopted (for home page)
+    let results = animals.filter(animal => !animal.isAdopted);
     
     if (animalType !== 'all') {
       results = results.filter(animal => animal.type === animalType);
