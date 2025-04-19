@@ -5,19 +5,23 @@ import { Animal } from '../../types';
 export const useAnimalFilters = (animals: Animal[], setFilteredAnimals: React.Dispatch<React.SetStateAction<Animal[]>>) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [animalType, setAnimalType] = useState('all');
-  const [adoptionStatus, setAdoptionStatus] = useState('available');
+  const [adoptionStatus, setAdoptionStatus] = useState('all');
 
   useEffect(() => {
-    let results = animals.filter(animal => !animal.isAdopted); // Filter out adopted animals
+    let results = animals;
     
     if (animalType !== 'all') {
       results = results.filter(animal => animal.type === animalType);
     }
     
-    if (adoptionStatus === 'pending') {
-      results = results.filter(animal => animal.adopterName && !animal.isAdopted);
-    } else if (adoptionStatus === 'available') {
-      results = results.filter(animal => !animal.adopterName && !animal.isAdopted);
+    if (adoptionStatus !== 'all') {
+      if (adoptionStatus === 'adopted') {
+        results = results.filter(animal => animal.isAdopted === true);
+      } else if (adoptionStatus === 'available') {
+        results = results.filter(animal => !animal.isAdopted && !animal.adopterName);
+      } else if (adoptionStatus === 'pending') {
+        results = results.filter(animal => animal.adopterName && !animal.isAdopted);
+      }
     }
     
     if (searchTerm) {
