@@ -13,7 +13,7 @@ const HomePage = () => {
   const [filteredAnimals, setFilteredAnimals] = useState<Animal[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [animalType, setAnimalType] = useState('all');
-  const [adoptionStatus, setAdoptionStatus] = useState('all');
+  const [adoptionStatus, setAdoptionStatus] = useState('available');
   const [isLoading, setIsLoading] = useState(true);
   
   console.log('Home page rendered with', animals.length, 'animals');
@@ -26,6 +26,7 @@ const HomePage = () => {
         .from('animals')
         .select('*')
         .eq('deleted', false)
+        .eq('is_adopted', false)
         .order('created_at', { ascending: false });
       
       if (error) {
@@ -52,16 +53,14 @@ const HomePage = () => {
         uploaderContact: animal.uploader_contact || undefined,
         createdAt: new Date(animal.created_at),
         isEmergency: animal.is_emergency,
-        isAdopted: animal.is_adopted || false,
-        adopterName: animal.adopter_name || undefined,
-        adopterEmail: animal.adopter_email || undefined,
-        adopterContact: animal.adopter_contact || undefined,
-        adoptedAt: animal.adopted_at ? new Date(animal.adopted_at) : undefined,
+        isAdopted: false,
+        adopterName: undefined,
+        adopterEmail: undefined,
+        adopterContact: undefined,
+        adoptedAt: undefined,
       }));
       
       console.log('Mapped animals:', mappedAnimals.length);
-      
-      // Always show all animals on the home page, whether adopted or not
       setAnimals(mappedAnimals);
       setFilteredAnimals(mappedAnimals);
     } catch (error) {
@@ -75,14 +74,12 @@ const HomePage = () => {
   useEffect(() => {
     fetchAnimals();
     
-    // Listen for real-time updates on the animals table
-    // This will ensure data is updated when animals are deleted or modified
     const channel = supabase
       .channel('animal-changes')
       .on(
         'postgres_changes', 
         { 
-          event: '*',  // Listen to all events (including DELETE)
+          event: '*', 
           schema: 'public', 
           table: 'animals'
         }, 
@@ -90,11 +87,9 @@ const HomePage = () => {
           console.log('Realtime update received:', payload);
           if (payload.eventType === 'DELETE') {
             console.log(`Animal deleted with ID: ${payload.old?.id}`);
-            // Immediately remove the deleted animal from the UI
             setAnimals(prev => prev.filter(animal => animal.id !== payload.old.id));
             setFilteredAnimals(prev => prev.filter(animal => animal.id !== payload.old.id));
           } else {
-            // For other changes, just refresh the data
             fetchAnimals();
           }
         }
@@ -103,7 +98,6 @@ const HomePage = () => {
         console.log('Realtime subscription status:', status);
       });
     
-    // Refresh data when the page becomes visible
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         console.log('Page became visible, refreshing data...');
@@ -113,7 +107,6 @@ const HomePage = () => {
     
     document.addEventListener('visibilitychange', handleVisibilityChange);
     
-    // Clean up subscriptions on unmount
     return () => {
       console.log('Cleaning up subscriptions');
       document.removeEventListener('visibilitychange', handleVisibilityChange);
@@ -121,36 +114,11 @@ const HomePage = () => {
     };
   }, []);
   
-  // Debug the realtime channel
-  useEffect(() => {
-    const testRealtime = async () => {
-      try {
-        // Check if realtime is enabled for your Supabase project
-        const { data, error } = await supabase.from('animals').select('count').limit(1);
-        console.log('Realtime test query result:', data, error);
-      } catch (err) {
-        console.error('Realtime test error:', err);
-      }
-    };
-    
-    testRealtime();
-  }, []);
-  
   useEffect(() => {
     let results = animals;
     
     if (animalType !== 'all') {
       results = results.filter(animal => animal.type === animalType);
-    }
-    
-    if (adoptionStatus !== 'all') {
-      if (adoptionStatus === 'adopted') {
-        results = results.filter(animal => animal.isAdopted === true);
-      } else if (adoptionStatus === 'available') {
-        results = results.filter(animal => !animal.isAdopted && !animal.adopterName);
-      } else if (adoptionStatus === 'pending') {
-        results = results.filter(animal => animal.adopterName && !animal.isAdopted);
-      }
     }
     
     if (searchTerm) {
@@ -163,7 +131,7 @@ const HomePage = () => {
     
     console.log('Filtered to', results.length, 'animals');
     setFilteredAnimals(results);
-  }, [searchTerm, animalType, adoptionStatus, animals]);
+  }, [searchTerm, animalType, animals]);
   
   return (
     <Layout>
@@ -195,22 +163,6 @@ const HomePage = () => {
                 <SelectItem value="all">All Animals</SelectItem>
                 <SelectItem value="dog">Dogs Only</SelectItem>
                 <SelectItem value="cat">Cats Only</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="w-full sm:w-48">
-            <Select 
-              value={adoptionStatus} 
-              onValueChange={setAdoptionStatus}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Adoption Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="available">Available</SelectItem>
-                <SelectItem value="pending">Pending Approval</SelectItem>
-                <SelectItem value="adopted">Adopted</SelectItem>
               </SelectContent>
             </Select>
           </div>
