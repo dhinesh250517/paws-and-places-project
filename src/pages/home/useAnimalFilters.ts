@@ -2,10 +2,11 @@
 import { useState, useEffect } from 'react';
 import { Animal } from '../../types';
 
-export const useAnimalFilters = (animals: Animal[], setFilteredAnimals: React.Dispatch<React.SetStateAction<Animal[]>>) => {
+export const useAnimalFilters = (animals: Animal[]) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [animalType, setAnimalType] = useState('all');
   const [adoptionStatus, setAdoptionStatus] = useState('all');
+  const [filteredAnimals, setFilteredAnimals] = useState<Animal[]>([]);
 
   useEffect(() => {
     let results = animals;
@@ -34,7 +35,7 @@ export const useAnimalFilters = (animals: Animal[], setFilteredAnimals: React.Di
     
     console.log('Filtered to', results.length, 'animals');
     setFilteredAnimals(results);
-  }, [searchTerm, animalType, adoptionStatus, animals, setFilteredAnimals]);
+  }, [searchTerm, animalType, adoptionStatus, animals]);
 
   return {
     searchTerm,
@@ -43,5 +44,6 @@ export const useAnimalFilters = (animals: Animal[], setFilteredAnimals: React.Di
     setAnimalType,
     adoptionStatus,
     setAdoptionStatus,
+    filteredAnimals
   };
 };

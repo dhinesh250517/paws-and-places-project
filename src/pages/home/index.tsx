@@ -6,17 +6,25 @@ import HomeFilters from './HomeFilters';
 import AnimalsGrid from './AnimalsGrid';
 import { useAnimalData } from './useAnimalData';
 import { useAnimalFilters } from './useAnimalFilters';
+import { Animal } from '@/types';
 
 const HomePage = () => {
-  const { filteredAnimals, setFilteredAnimals, isLoading, animals } = useAnimalData();
+  const [filters, setFilters] = React.useState({
+    type: 'all' as 'all' | 'dogs' | 'cats',
+    emergencyOnly: false,
+    sortBy: 'newest' as 'newest' | 'oldest'
+  });
+  
+  const { animals, loading, error } = useAnimalData(filters);
   const { 
     searchTerm, 
     setSearchTerm, 
     animalType, 
     setAnimalType, 
     adoptionStatus, 
-    setAdoptionStatus 
-  } = useAnimalFilters(animals, setFilteredAnimals);
+    setAdoptionStatus,
+    filteredAnimals 
+  } = useAnimalFilters(animals);
   
   return (
     <Layout>
@@ -32,7 +40,7 @@ const HomePage = () => {
           setAdoptionStatus={setAdoptionStatus}
         />
         
-        <AnimalsGrid animals={filteredAnimals} isLoading={isLoading} />
+        <AnimalsGrid animals={filteredAnimals} isLoading={loading} />
       </div>
     </Layout>
   );
