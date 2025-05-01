@@ -3,7 +3,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import Layout from '../components/Layout';
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { UserIcon, HeartIcon, PawPrintIcon, ShieldIcon, HomeIcon } from 'lucide-react';
+import { UserIcon, HeartIcon, DogIcon, ShieldIcon, HomeIcon } from 'lucide-react';
 
 const teamMembers = [
   {
@@ -70,7 +70,7 @@ const AboutUsPage = () => {
           
           <div>
             <h2 className="text-2xl font-bold mb-4 flex items-center text-pawsBlue">
-              <PawPrintIcon className="mr-2 h-6 w-6" />
+              <DogIcon className="mr-2 h-6 w-6" />
               How It Works
             </h2>
             <div className="space-y-4">
