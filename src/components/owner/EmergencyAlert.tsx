@@ -2,7 +2,7 @@
 import React from 'react';
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { AlertTriangleIcon, BellIcon } from 'lucide-react';
+import { AlertTriangle, Bell } from 'lucide-react';
 import { Animal } from '@/types';
 
 interface EmergencyAlertProps {
@@ -22,9 +22,9 @@ export const EmergencyAlert: React.FC<EmergencyAlertProps> = ({
 
   return (
     <Alert variant="destructive" className="mb-6">
-      <AlertTriangleIcon className="h-5 w-5" />
+      <AlertTriangle className="h-5 w-5" />
       <AlertTitle className="flex items-center gap-2">
-        <BellIcon className="h-4 w-4" /> Emergency Animals Reported!
+        <Bell className="h-4 w-4" /> Emergency Animals Reported!
       </AlertTitle>
       <AlertDescription>
         <p>There are {emergencyAnimals.length} emergency cases that need attention:</p>

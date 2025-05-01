@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { supabase } from '../integrations/supabase/client';
-import { ArchiveIcon } from 'lucide-react';
+import { ArchiveIcon, AlertTriangle } from 'lucide-react';
 import Layout from '../components/Layout';
 import { Button } from "@/components/ui/button";
 import { Animal } from '../types';
@@ -198,7 +198,7 @@ const OwnerPage = () => {
             
             <div>
               <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
-                <AlertTriangleIcon className="h-5 w-5 text-red-500" />
+                <AlertTriangle className="h-5 w-5 text-red-500" />
                 Emergency Animals
               </h2>
               <EmergencyAnimalsTable 
