@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -91,37 +90,32 @@ const LoginForm = () => {
   
   return (
     <div className="flex min-h-screen">
-      {/* Left side - Website Information */}
-      <div className="hidden md:flex flex-col justify-center items-center bg-pawsBlue text-white w-2/5 p-8">
+      {/* Left side - Website Information (now more compact) */}
+      <div className="hidden md:flex flex-col justify-center items-center bg-pawsBlue text-white w-1/3 p-6">
         <div className="max-w-md mx-auto text-center">
-          <div className="flex items-center justify-center space-x-3 mb-6">
-            <DogIcon className="h-12 w-12" />
-            <CatIcon className="h-12 w-12" />
+          <div className="flex items-center justify-center space-x-2 mb-4">
+            <DogIcon className="h-8 w-8" />
+            <CatIcon className="h-8 w-8" />
           </div>
-          <h1 className="text-3xl font-bold mb-4">Welcome to Paws & Places</h1>
-          <p className="text-xl mb-6">Helping stray animals find care and loving homes.</p>
+          <h1 className="text-2xl font-bold mb-2">Paws & Places</h1>
+          <p className="text-sm mb-4">Helping stray animals find care and loving homes.</p>
           
-          <div className="space-y-6">
-            <div className="bg-white/10 p-4 rounded-lg">
-              <h3 className="font-semibold text-lg mb-2">Our Mission</h3>
-              <p>We connect animal lovers with stray cats and dogs that need help, providing a platform to coordinate care and adoption.</p>
+          <div className="space-y-3">
+            <div className="bg-white/10 p-3 rounded-lg">
+              <h3 className="font-medium text-sm mb-1">Our Mission</h3>
+              <p className="text-xs">Connecting animal lovers with strays that need help.</p>
             </div>
             
-            <div className="bg-white/10 p-4 rounded-lg">
-              <h3 className="font-semibold text-lg mb-2">How It Works</h3>
-              <p>Report stray animals, volunteer to help, or adopt - join our community and make a difference in an animal's life today.</p>
-            </div>
-            
-            <div className="bg-white/10 p-4 rounded-lg">
-              <h3 className="font-semibold text-lg mb-2">Get Started</h3>
-              <p>Sign up now to help stray animals in your neighborhood find the care and homes they deserve.</p>
+            <div className="bg-white/10 p-3 rounded-lg">
+              <h3 className="font-medium text-sm mb-1">How It Works</h3>
+              <p className="text-xs">Report strays, volunteer to help, or adopt - make a difference today.</p>
             </div>
           </div>
         </div>
       </div>
       
       {/* Right side - Login/Register Form */}
-      <div className="w-full md:w-3/5 flex items-center justify-center p-8">
+      <div className="w-full md:w-2/3 flex items-center justify-center p-8">
         <Card className="w-full max-w-md">
           <CardHeader className="space-y-1">
             <div className="flex items-center justify-center space-x-2 mb-2">
