@@ -13,7 +13,6 @@ export const useAnimalData = (filters: {
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    let isMounted = true;
     const fetchAnimals = async () => {
       try {
         setLoading(true);
@@ -48,8 +47,6 @@ export const useAnimalData = (filters: {
           throw new Error(fetchError.message);
         }
 
-        if (!isMounted) return;
-
         // Map fetched data to Animal type
         const mappedAnimals = (animalsData as DbAnimal[]).map((animal) => ({
           id: animal.id,
@@ -73,14 +70,9 @@ export const useAnimalData = (filters: {
         setAnimals(mappedAnimals);
       } catch (err) {
         console.error('Error fetching animals:', err);
-        if (isMounted) {
-          setError(err instanceof Error ? err : new Error('Unknown error occurred'));
-          // Don't clear previous data on error to maintain UI stability
-        }
+        setError(err instanceof Error ? err : new Error('Unknown error occurred'));
       } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
+        setLoading(false);
       }
     };
 
@@ -89,16 +81,12 @@ export const useAnimalData = (filters: {
     // Set up real-time subscription to update when data changes
     const channel = supabase
       .channel('public:animals')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'animals' }, (payload) => {
-        console.log('Real-time update received:', payload);
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'animals' }, () => {
         fetchAnimals();
       })
-      .subscribe((status) => {
-        console.log('Subscription status:', status);
-      });
+      .subscribe();
 
     return () => {
-      isMounted = false;
       supabase.removeChannel(channel);
     };
   }, [filters]);
