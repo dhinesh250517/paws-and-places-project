@@ -36,7 +36,10 @@ serve(async (req) => {
       .eq('id', id)
       .select();
     
-    if (error) throw error;
+    if (error) {
+      console.error("Error in database update:", error);
+      throw error;
+    }
     
     // Return success response with appropriate message based on the action
     let message;

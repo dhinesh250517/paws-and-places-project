@@ -1,0 +1,22 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Paws & Places</title>
+  <script>
+    // Single Page App redirection script
+    // This handles page refreshes in GitHub Pages or similar static hosting
+    (function() {
+      // Get the current path
+      const path = window.location.pathname;
+      // Redirect to the index.html with the path as a parameter
+      window.location.href = `/?redirect=${path}`;
+    })();
+  </script>
+</head>
+<body>
+  Redirecting...
+</body>
+</html>

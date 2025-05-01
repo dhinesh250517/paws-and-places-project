@@ -7,13 +7,12 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 // Pages
 import Index from "./pages/Index";
-import Home from "./pages/Home";
+import Home from "./pages/home";
 import AddAnimal from "./pages/AddAnimal";
 import AboutUs from "./pages/AboutUs";
 import NotFound from "./pages/NotFound";
 import Owner from "./pages/Owner";
 import AdoptedAnimals from "./pages/AdoptedAnimals";
-import DeletedAnimals from "./pages/DeletedAnimals";
 
 const queryClient = new QueryClient();
 
@@ -30,7 +29,6 @@ const App = () => (
           <Route path="/about" element={<AboutUs />} />
           <Route path="/owner" element={<Owner />} />
           <Route path="/adopted" element={<AdoptedAnimals />} />
-          <Route path="/deleted" element={<DeletedAnimals />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

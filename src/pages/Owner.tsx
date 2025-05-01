@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
@@ -162,18 +161,17 @@ const OwnerPage = () => {
     try {
       const { error } = await supabase.functions.invoke('update-adoption-status', {
         body: { 
-          animalId: currentAnimal.id,
+          id: currentAnimal.id,
           isAdopted: true,
           adopterName: adopterInfo.name,
           adopterEmail: adopterInfo.email,
-          adopterContact: adopterInfo.contact,
-          adoptedAt: new Date().toISOString()
+          adopterContact: adopterInfo.contact
         }
       });
       
       if (error) {
         console.error('Error updating adoption status:', error);
-        toast.error('Failed to update adoption status');
+        toast.error('Failed to update adoption status: ' + error.message);
         return;
       }
       
@@ -206,7 +204,7 @@ const OwnerPage = () => {
       setVerifyDialogOpen(false);
     } catch (error) {
       console.error('Error in adoption verification:', error);
-      toast.error('Failed to verify adoption');
+      toast.error('Failed to verify adoption. Please try again.');
     }
   };
   
@@ -252,18 +250,17 @@ const OwnerPage = () => {
     try {
       const { error } = await supabase.functions.invoke('update-adoption-status', {
         body: { 
-          animalId: animalId,
+          id: animalId,
           isAdopted: false,
           adopterName: null,
           adopterEmail: null,
-          adopterContact: null,
-          adoptedAt: null
+          adopterContact: null
         }
       });
       
       if (error) {
         console.error('Error updating adoption status:', error);
-        toast.error('Failed to reject adoption');
+        toast.error('Failed to reject adoption: ' + error.message);
         return;
       }
       
@@ -286,7 +283,7 @@ const OwnerPage = () => {
       setPendingAdoptions(prev => prev.filter(a => a.id !== animalId));
     } catch (error) {
       console.error('Error in adoption rejection:', error);
-      toast.error('Failed to reject adoption');
+      toast.error('Failed to reject adoption. Please try again.');
     }
   };
   
