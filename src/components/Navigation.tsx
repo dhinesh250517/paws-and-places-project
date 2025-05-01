@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+
+import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
@@ -7,8 +8,9 @@ import {
   XIcon, 
   HeartHandshakeIcon, 
   LogOutIcon, 
-  DogIcon 
-} from "lucide-react"; // ✅ Imported DogIcon
+  DogIcon,
+  TrashIcon
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -17,6 +19,12 @@ const Navigation = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
+  const [isOwner, setIsOwner] = useState(false);
+
+  useEffect(() => {
+    const ownerLoggedIn = localStorage.getItem('ownerLoggedIn');
+    setIsOwner(ownerLoggedIn === 'true');
+  }, [location.pathname]);
 
   const navItems = [
     { path: "/home", label: "Home" },
@@ -25,11 +33,17 @@ const Navigation = () => {
     { path: "/about", label: "About Us" },
   ];
 
+  // Owner-only navigation items
+  const ownerNavItems = [
+    { path: "/owner", label: "Admin Dashboard" },
+    { path: "/deleted", label: "Deleted Animals" },
+  ];
+
   const isActive = (path: string) => location.pathname === path;
 
   const handleLogout = async () => {
     try {
-      if (location.pathname === '/owner') {
+      if (isOwner) {
         localStorage.removeItem('ownerLoggedIn');
         toast.success('Owner logged out');
         navigate('/');
@@ -57,22 +71,41 @@ const Navigation = () => {
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex space-x-1">
-          {navItems.map((item) => (
-            <Link key={item.path} to={item.path}>
-              <Button
-                variant={isActive(item.path) ? "default" : "ghost"}
-                className={cn(
-                  "px-3",
-                  isActive(item.path) ? "bg-pawsBlue text-white" : ""
-                )}
-              >
-                {item.label === "Adopted Animals" && (
-                  <HeartHandshakeIcon className="h-4 w-4 mr-1 text-green-500" />
-                )}
-                {item.label}
-              </Button>
-            </Link>
-          ))}
+          {isOwner ? (
+            ownerNavItems.map((item) => (
+              <Link key={item.path} to={item.path}>
+                <Button
+                  variant={isActive(item.path) ? "default" : "ghost"}
+                  className={cn(
+                    "px-3",
+                    isActive(item.path) ? "bg-pawsBlue text-white" : ""
+                  )}
+                >
+                  {item.label === "Deleted Animals" && (
+                    <TrashIcon className="h-4 w-4 mr-1" />
+                  )}
+                  {item.label}
+                </Button>
+              </Link>
+            ))
+          ) : (
+            navItems.map((item) => (
+              <Link key={item.path} to={item.path}>
+                <Button
+                  variant={isActive(item.path) ? "default" : "ghost"}
+                  className={cn(
+                    "px-3",
+                    isActive(item.path) ? "bg-pawsBlue text-white" : ""
+                  )}
+                >
+                  {item.label === "Adopted Animals" && (
+                    <HeartHandshakeIcon className="h-4 w-4 mr-1 text-green-500" />
+                  )}
+                  {item.label}
+                </Button>
+              </Link>
+            ))
+          )}
           <Button 
             variant="ghost" 
             onClick={handleLogout}
@@ -92,26 +125,49 @@ const Navigation = () => {
           </SheetTrigger>
           <SheetContent side="right">
             <div className="flex flex-col space-y-3 mt-6">
-              {navItems.map((item) => (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  onClick={() => setIsOpen(false)}
-                >
-                  <Button
-                    variant={isActive(item.path) ? "default" : "ghost"}
-                    className={cn(
-                      "w-full justify-start",
-                      isActive(item.path) ? "bg-pawsBlue text-white" : ""
-                    )}
+              {isOwner ? (
+                ownerNavItems.map((item) => (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    onClick={() => setIsOpen(false)}
                   >
-                    {item.label === "Adopted Animals" && (
-                      <HeartHandshakeIcon className="h-4 w-4 mr-2 text-green-500" />
-                    )}
-                    {item.label}
-                  </Button>
-                </Link>
-              ))}
+                    <Button
+                      variant={isActive(item.path) ? "default" : "ghost"}
+                      className={cn(
+                        "w-full justify-start",
+                        isActive(item.path) ? "bg-pawsBlue text-white" : ""
+                      )}
+                    >
+                      {item.label === "Deleted Animals" && (
+                        <TrashIcon className="h-4 w-4 mr-2" />
+                      )}
+                      {item.label}
+                    </Button>
+                  </Link>
+                ))
+              ) : (
+                navItems.map((item) => (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <Button
+                      variant={isActive(item.path) ? "default" : "ghost"}
+                      className={cn(
+                        "w-full justify-start",
+                        isActive(item.path) ? "bg-pawsBlue text-white" : ""
+                      )}
+                    >
+                      {item.label === "Adopted Animals" && (
+                        <HeartHandshakeIcon className="h-4 w-4 mr-2 text-green-500" />
+                      )}
+                      {item.label}
+                    </Button>
+                  </Link>
+                ))
+              )}
               <Button 
                 variant="ghost" 
                 onClick={handleLogout}

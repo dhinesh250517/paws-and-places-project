@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
@@ -11,7 +12,7 @@ import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Animal, DbAnimal } from '../types';
 import { supabase } from '../integrations/supabase/client';
 import { toast } from 'sonner';
-import { CheckCircleIcon, XCircleIcon, TrashIcon, AlertTriangleIcon, BellIcon } from 'lucide-react';
+import { CheckCircleIcon, XCircleIcon, TrashIcon, AlertTriangleIcon, BellIcon, ArchiveIcon } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 const OwnerPage = () => {
@@ -54,6 +55,7 @@ const OwnerPage = () => {
       const { data: dbAnimals, error } = await supabase
         .from('animals')
         .select('*')
+        .eq('deleted', false) // Only fetch non-deleted animals
         .order('created_at', { ascending: false });
       
       if (error) {
@@ -216,19 +218,19 @@ const OwnerPage = () => {
   const confirmDeleteAnimal = async () => {
     if (!animalToDelete) return;
     try {
-      // Permanently delete the animal from the database
+      // Mark the animal as deleted instead of permanently deleting it
       const { error } = await supabase
         .from('animals')
-        .delete()
+        .update({ deleted: true })
         .eq('id', animalToDelete);
       
       if (error) {
-        console.error('Error deleting animal:', error);
+        console.error('Error marking animal as deleted:', error);
         toast.error('Failed to delete animal: ' + error.message);
         return;
       }
       
-      toast.success('Animal deleted successfully!');
+      toast.success('Animal moved to deleted animals!');
       
       // Close the dialog and reset the state
       setDeleteDialogOpen(false);
@@ -302,7 +304,17 @@ const OwnerPage = () => {
       <div className="paws-container py-8">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold">Owner Admin Panel</h1>
-          <Button variant="outline" onClick={handleLogout}>Logout</Button>
+          <div className="flex space-x-3">
+            <Button 
+              variant="outline" 
+              onClick={() => navigate('/deleted')}
+              className="flex items-center"
+            >
+              <ArchiveIcon className="h-4 w-4 mr-2" />
+              View Deleted Animals
+            </Button>
+            <Button variant="outline" onClick={handleLogout}>Logout</Button>
+          </div>
         </div>
         
         {showEmergencyAlert && emergencyAnimals.length > 0 && (
@@ -640,7 +652,7 @@ const OwnerPage = () => {
             <AlertDialogHeader>
               <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
               <AlertDialogDescription>
-                Are you sure you want to delete this animal entry? This action cannot be undone and the entry will be permanently removed from the database.
+                Are you sure you want to delete this animal entry? The animal will be moved to the deleted animals section and no longer visible to regular users.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
