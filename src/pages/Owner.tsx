@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
@@ -12,13 +11,14 @@ import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Animal, DbAnimal } from '../types';
 import { supabase } from '../integrations/supabase/client';
 import { toast } from 'sonner';
-import { CheckCircleIcon, XCircleIcon, TrashIcon, AlertTriangleIcon, BellIcon, ArchiveIcon } from 'lucide-react';
+import { CheckCircleIcon, XCircleIcon, TrashIcon, AlertTriangleIcon, BellIcon, ArchiveIcon, RefreshCw } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 const OwnerPage = () => {
   const navigate = useNavigate();
   const [animals, setAnimals] = useState<Animal[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
   const [pendingAdoptions, setPendingAdoptions] = useState<Animal[]>([]);
   const [oldEntries, setOldEntries] = useState<Animal[]>([]);
   const [adoptedEntries, setAdoptedEntries] = useState<Animal[]>([]);
@@ -33,6 +33,7 @@ const OwnerPage = () => {
     email: '',
     contact: '',
   });
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     const isOwner = localStorage.getItem('ownerLoggedIn');
@@ -49,9 +50,14 @@ const OwnerPage = () => {
     };
   }, []);
 
-  const fetchAnimals = async () => {
+  const fetchAnimals = useCallback(async () => {
     try {
       setLoading(true);
+      setError(null);
+      
+      // Add a small delay to avoid race conditions with Supabase
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       const { data: dbAnimals, error } = await supabase
         .from('animals')
         .select('*')
@@ -61,6 +67,7 @@ const OwnerPage = () => {
       if (error) {
         console.error('Error fetching animals:', error);
         toast.error('Failed to load animals');
+        setError(new Error(error.message));
         return;
       }
       
@@ -123,10 +130,11 @@ const OwnerPage = () => {
     } catch (error) {
       console.error('Unexpected error fetching animals:', error);
       toast.error('An unexpected error occurred');
+      setError(error instanceof Error ? error : new Error('Unknown error occurred'));
     } finally {
       setLoading(false);
     }
-  };
+  }, [emergencyAnimals]);
   
   useEffect(() => {
     fetchAnimals();
@@ -145,8 +153,14 @@ const OwnerPage = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [fetchAnimals]);
   
+  const handleRetry = () => {
+    setRetryCount(prev => prev + 1);
+    fetchAnimals();
+    toast.info('Retrying to fetch animals...');
+  };
+
   const handleVerifyAdoption = (animal: Animal) => {
     setCurrentAnimal(animal);
     setAdopterInfo({
@@ -345,8 +359,33 @@ const OwnerPage = () => {
           </Alert>
         )}
         
-        {loading ? (
-          <div className="text-center py-16">Loading...</div>
+        {error && (
+          <Alert variant="destructive" className="mb-6">
+            <AlertTriangleIcon className="h-5 w-5" />
+            <AlertTitle>Error loading animals</AlertTitle>
+            <AlertDescription>
+              <p>{error.message}</p>
+              <div className="mt-3">
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  onClick={handleRetry}
+                  className="flex items-center gap-1"
+                >
+                  <RefreshCw className="h-3 w-3" /> Retry
+                </Button>
+              </div>
+            </AlertDescription>
+          </Alert>
+        )}
+        
+        {loading && !error ? (
+          <div className="text-center py-16">
+            <div className="flex flex-col items-center justify-center">
+              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-pawsBlue mb-4"></div>
+              <p>Loading animals...</p>
+            </div>
+          </div>
         ) : (
           <div className="space-y-10">
             <div>
