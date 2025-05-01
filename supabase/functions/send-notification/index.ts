@@ -1,5 +1,3 @@
-
-// This is a Supabase Edge Function that will handle sending SMS notifications
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
@@ -7,39 +5,53 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const FAST2SMS_API_KEY = "K7Mnd521gfptAZ9BHDEXcCxURF6VNJkTIh3wGubWq80ayOLvQ4QCjNXIly1mELf74ear6ndDU2FhpcbR";
+
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     const { animal } = await req.json();
-    
-    // For demo purposes, we're logging the notification instead of actually sending it
-    // In a production app, you would integrate with Twilio, Vonage, or another SMS service here
-    console.log(`EMERGENCY NOTIFICATION SENT to +91 9150231058: 
-      ${animal.count} ${animal.type}(s) needs urgent help at ${animal.address}. 
-      Condition: ${animal.healthCondition}. 
-      Contact: ${animal.uploaderName} ${animal.uploaderContact || 'no phone provided'}`);
-    
-    // Return success response
+
+    const messageBody = `${animal.count} ${animal.type}(s) need urgent help at ${animal.address}. 
+Condition: ${animal.healthCondition}. 
+Contact: ${animal.uploaderName} ${animal.uploaderContact || 'No phone provided'}`;
+
+    const smsPayload = {
+      route: "q", // quick transactional route
+      message: messageBody,
+      language: "english",
+      flash: 0,
+      numbers: "9150231058" // recipient number (can be dynamic)
+    };
+
+    const smsResponse = await fetch("https://www.fast2sms.com/dev/bulkV2", {
+      method: "POST",
+      headers: {
+        authorization: FAST2SMS_API_KEY,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(smsPayload)
+    });
+
+    const smsResult = await smsResponse.json();
+
+    if (!smsResponse.ok || smsResult.return !== true) {
+      throw new Error(`Fast2SMS error: ${JSON.stringify(smsResult)}`);
+    }
+
     return new Response(
-      JSON.stringify({ success: true, message: "Notification sent successfully" }),
-      { 
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200 
-      }
+      JSON.stringify({ success: true, message: "SMS sent successfully" }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
     );
+
   } catch (error) {
-    console.error("Error sending notification:", error);
-    
+    console.error("Error sending SMS:", error);
     return new Response(
       JSON.stringify({ success: false, error: error.message }),
-      { 
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 500 
-      }
+      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
     );
   }
 });
