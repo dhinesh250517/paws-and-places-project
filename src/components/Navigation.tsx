@@ -1,9 +1,14 @@
-
 import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
-import { MenuIcon, XIcon, HeartHandshakeIcon, LogOutIcon } from "lucide-react";
+import { 
+  MenuIcon, 
+  XIcon, 
+  HeartHandshakeIcon, 
+  LogOutIcon, 
+  DogIcon 
+} from "lucide-react"; // ✅ Imported DogIcon
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -24,15 +29,13 @@ const Navigation = () => {
 
   const handleLogout = async () => {
     try {
-      // Check if we're on the owner page
       if (location.pathname === '/owner') {
         localStorage.removeItem('ownerLoggedIn');
         toast.success('Owner logged out');
         navigate('/');
         return;
       }
-      
-      // Regular user logout using Supabase
+
       await supabase.auth.signOut();
       toast.success('Logged out successfully');
       navigate('/');
@@ -45,36 +48,10 @@ const Navigation = () => {
   return (
     <nav className="bg-white shadow-sm">
       <div className="paws-container flex justify-between items-center py-3">
-        <Link to="/" className="font-bold text-lg flex items-center">
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className="text-pawsBlue mr-2"
-          >
-            <path
-              d="M10.5 18H13.5C15.1569 18 16.5 16.6569 16.5 15C16.5 13.3431 15.1569 12 13.5 12H10.5C8.84315 12 7.5 13.3431 7.5 15C7.5 16.6569 8.84315 18 10.5 18Z"
-              fill="currentColor"
-            />
-            <path
-              d="M7 9C8.10457 9 9 8.10457 9 7C9 5.89543 8.10457 5 7 5C5.89543 5 5 5.89543 5 7C5 8.10457 5.89543 9 7 9Z"
-              fill="currentColor"
-            />
-            <path
-              d="M17 9C18.1046 9 19 8.10457 19 7C19 5.89543 18.1046 5 17 5C15.8954 5 15 5.89543 15 7C15 8.10457 15.8954 9 17 9Z"
-              fill="currentColor"
-            />
-            <path
-              d="M19 17C20.1046 17 21 16.1046 21 15C21 13.8954 20.1046 13 19 13C17.8954 13 17 13.8954 17 15C17 16.1046 17.8954 17 19 17Z"
-              fill="currentColor"
-            />
-            <path
-              d="M5 17C6.10457 17 7 16.1046 7 15C7 13.8954 6.10457 13 5 13C3.89543 13 3 13.8954 3 15C3 16.1046 3.89543 17 5 17Z"
-              fill="currentColor"
-            />
-          </svg>
+        
+        {/* 🐶 Logo with DogIcon and text */}
+        <Link to="/" className="font-bold text-lg flex items-center text-pawsBlue">
+          <DogIcon className="h-6 w-6 mr-2" />
           Paws & Places
         </Link>
 
