@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { toast } from 'sonner';
 import { Animal, DbAnimal } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
@@ -14,6 +14,34 @@ export const useAnimalsData = () => {
   const [emergencyAnimals, setEmergencyAnimals] = useState<Animal[]>([]);
   const [showEmergencyAlert, setShowEmergencyAlert] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
+  const [isOffline, setIsOffline] = useState(false);
+
+  // Check for network connectivity
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOffline(false);
+      if (error) {
+        toast.info('Connection restored! Retrying...');
+        fetchAnimals();
+      }
+    };
+    
+    const handleOffline = () => {
+      setIsOffline(true);
+      setError(new Error('You appear to be offline. Please check your internet connection.'));
+    };
+    
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    
+    // Set initial offline status
+    setIsOffline(!navigator.onLine);
+    
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, [error]);
 
   const fetchAnimals = useCallback(async () => {
     try {
@@ -22,6 +50,11 @@ export const useAnimalsData = () => {
       
       // Add a small delay to avoid race conditions with Supabase
       await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Check if we're offline before making the request
+      if (!navigator.onLine) {
+        throw new Error('You appear to be offline. Please check your internet connection.');
+      }
       
       const { data: dbAnimals, error } = await supabase
         .from('animals')
@@ -184,6 +217,7 @@ export const useAnimalsData = () => {
     showEmergencyAlert,
     fetchAnimals,
     handleRetry,
+    isOffline,
     updateAdoptionStatus,
     deleteAnimal,
     dismissEmergencyAlert
